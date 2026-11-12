@@ -12,14 +12,16 @@ Data Engineer portfolio project on Microsoft Fabric (Trial), also used to prepar
 - Batch: Bronze (Parquet) -> Silver, Gold (Delta); lakehouses `lh_bronze`, `lh_silver`, `lh_gold`
 - Near-real-time: notebook polls every 2 hours -> Eventstream -> Eventhouse (micro-batch, not a true stream)
 - A single workspace `de_vn_prod`, connected to GitHub (`main`, Git folder `fabric/`); no dev/test environment
-- CI/CD: GitHub Actions on a single `main` branch; push -> CI (ruff, pytest, gitleaks, validation) -> CD calls the Fabric REST "Update From Git" (service principal + OIDC; manual fallback if unsupported)
-- `fabric-cicd` is deliberately not used (see `docs/design.md`)
+- CI: GitHub Actions on a single `main` branch; every push runs ruff, pytest, gitleaks, and `scripts/validate_fabric_items.py`
+- CD is manual: run "Update all" in Fabric Source control after CI is green (service principal automation was tried and dropped; see `docs/design.md`)
+- `fabric-cicd` is deliberately not used
 
 ## Repo layout
 - `fabric/`: workspace items (Git folder of `de_vn_prod`)
 - `src/`: plain Python modules (API calls, transforms); notebooks only import and call them
 - `tests/`: pytest tests for `src/`
-- `.github/workflows/`: `ci.yml`, `cd.yml`
+- `scripts/`: helper scripts (Fabric item validation)
+- `.github/workflows/`: `ci.yml`
 - `docs/`: documentation, diagrams
 
 ## Conventions
@@ -43,7 +45,7 @@ Data Engineer portfolio project on Microsoft Fabric (Trial), also used to prepar
 - Use English city names without diacritics for geocoding (`Hanoi`, not `Ha Noi` with diacritics)
 
 ## Status
-- Phase: design done, identity and workspace set up, implementation not started. See "Open items" in `docs/design.md`
+- Phase: design done, workspace connected to Git, CI in place, pipeline code not started. See "Open items" in `docs/design.md`
 
 ## Agent skills
 

@@ -58,10 +58,9 @@ Agreed on: 2026-11-12. Status: agreed after a design interview; not implemented 
 - A single workspace `de_vn_prod`, connected to GitHub (branch `main`, Git folder `fabric/`); there is no dev or test environment
 - Authoring: items created or changed in the Fabric UI are committed to `main` from Source control; code edited in an IDE is pushed to `main`
 - Every push to `main` runs the CI job: ruff, pytest, gitleaks, and a no-deploy validation (every JSON file and `.platform` parses, `py_compile` on notebook sources, every item folder has a valid `.platform` with a known item type)
-- CD: after CI passes, the workflow calls the Fabric REST API "Update From Git" for `de_vn_prod`
-  - Authentication: service principal with OIDC federated credential (no stored secret)
-  - Not verified: service principal support of this API with GitHub; fallback is a manual "Update all" in the Fabric UI, documented in the README
-- Rollback: `git revert` on `main`, then Update From Git
+- CD is manual: after CI is green, run "Update all" in the Fabric Source control panel
+  - Automation with a service principal was tested on 2026-11-12: OIDC login worked, but the Fabric Git API returned `GitCredentialsNotConfigured`. A service principal needs its own GitHub credential, which means a long-lived token stored in a Fabric connection and renewed regularly. This was judged not worth it for a one-person project; the README documents the decision
+- Rollback: `git revert` on `main`, then "Update all" in Fabric
 - Working rules (UI and IDE write to the same branch):
   - Before editing in the Fabric UI, run "Update all" in Source control
   - Before pushing from an IDE, run `git pull --rebase`
@@ -69,15 +68,19 @@ Agreed on: 2026-11-12. Status: agreed after a design interview; not implemented 
 - `fabric-cicd` is not used: it publishes items into a workspace that is not Git-connected and mainly pays off with several environments, which this project does not have. Its parameterization is also not needed (one environment). Workspace-specific IDs, when needed, go in GitHub variables, never hardcoded
 
 ## Identity and access (set up on 2026-11-12)
-- Entra group `vn_fabric_cicd`, app registration `vn_weather_fabric_cicd` (single tenant, no client secret), its service principal, and the federated credential `github_main` (repo `stevetran77/vn_weather_fabric`, branch `main`) exist
-- The service principal is a Member of `de_vn_prod`
-- Tenant settings: "Service principals can call Fabric public APIs" is enabled; "Users can sync workspace items with GitHub repositories" is enabled but currently limited to group `vn_fabric_cicd` and must be widened to the signed-in user or the whole organization
+- `de_vn_prod` is connected to GitHub (`stevetran77/vn_weather_fabric`, branch `main`, folder `/fabric`) with the user's own token
+- Tenant setting "Users can sync workspace items with GitHub repositories" is enabled for group `vn_fabric_cicd`, which now contains the signed-in user
+- Created for the CD experiment and no longer used (candidates for cleanup): Entra app `vn_weather_fabric_cicd` with its service principal and federated credentials, the service principal's Member role on `de_vn_prod`, and the tenant setting "Service principals can call Fabric public APIs"
+- GitHub Actions now uses no cloud credentials, so the repository has no secrets and no variables
+- GitHub's OIDC subject claim includes numeric owner and repo IDs (`repo:<owner>@<id>/<repo>@<id>:ref:...`); a federated credential must use that exact form
 
 ## Repo layout
 - `fabric/`: workspace items (the Git folder of `de_vn_prod`)
 - `src/`: plain Python modules (API calls, transforms)
 - `tests/`: pytest tests for `src/`
-- `.github/workflows/`: `ci.yml`, `cd.yml`
+- `scripts/`: helper scripts (`validate_fabric_items.py` checks the Fabric item folders without calling any API)
+- `.github/workflows/`: `ci.yml`
+- `pyproject.toml`, `requirements-dev.txt`: ruff and pytest configuration, dev dependencies
 - `docs/`: documentation and architecture diagram
 - `README.md`
 
@@ -104,23 +107,21 @@ Agreed on: 2026-11-12. Status: agreed after a design interview; not implemented 
 - 6 cities backfilled; daily pipeline and 2-hour pipeline run on schedule
 - Gold tables populated; basic data quality checks run in notebooks
 - Power BI Direct Lake report and Real-Time Dashboard are viewable
-- CI is green; a push to `main` syncs `de_vn_prod` through the CD step (or the documented manual fallback)
+- CI is green on every push to `main`, and `de_vn_prod` is synced with "Update all" afterwards
 - README has an architecture diagram and states the limitations (PM2.5 is model data, the 2-hour branch is micro-batch, CC BY 4.0 attribution)
 - Every function in `src/` has a test
 - Demo screenshots and video are stored in `docs/` before the Trial expires
 
 ## Out of scope (deferred)
-- Dev/test environments, `fabric-cicd`, Deployment Pipelines, advanced Purview/lineage, Data Activator, ML
+- Dev/test environments, `fabric-cicd`, automated CD, Deployment Pipelines, advanced Purview/lineage, Data Activator, ML
 
 ## Unverified (check during implementation)
-- Whether "Update From Git" works with a service principal and a GitHub connection
 - How to store the Eventstream custom endpoint connection key without hardcoding it
 - Licenses of World Bank data and provinces.open-api.vn
 - Whether the Trial keeps scheduled pipelines running for the full 60 days
 - Schema support in lakehouses (if the three lakehouses are ever merged into one)
 
 ## Open items
-- Widen the GitHub tenant setting to the signed-in user (or the whole organization)
-- Push the repo with a `fabric/` folder (for example with a `.gitkeep`), then connect `de_vn_prod` to GitHub (branch `main`, folder `fabric`) in Workspace settings
-- Test Update From Git with the service principal
-- Write `src/`, `tests/`, and the CI and CD workflows
+- Decide whether to delete the unused Entra app, group membership, and service principal tenant setting
+- Build the pipeline: `src/` modules and tests, Fabric items under `fabric/`
+- Write the README (architecture diagram, limitations, manual sync step)
