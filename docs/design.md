@@ -126,5 +126,5 @@ Agreed on: 2026-11-12. Status: agreed after a design interview; not implemented 
 - Schema support in lakehouses (if the three lakehouses are ever merged into one)
 
 ## Open items
-- Build the pipeline: `src/` modules and tests, Fabric items under `fabric/`
+- Build the pipeline: `src/` modules and tests, Fabric items under `fabric/` (`src/geocoding.py` and `config/cities.json` done)
 - Write the README (architecture diagram, limitations, manual sync step)

@@ -46,7 +46,7 @@ Data Engineer portfolio project on Microsoft Fabric (Trial), also used to prepar
 - Use English city names without diacritics for geocoding (`Hanoi`, not `Ha Noi` with diacritics)
 
 ## Status
-- Phase: design done, workspace connected to Git, CI in place, pipeline code not started. See "Open items" in `docs/design.md`
+- Phase: design done, workspace connected to Git, CI in place. Ticket 01 (34-City config and geocoding, `src/geocoding.py`) done; next is ticket 02 (lakehouses, done by the user in the Fabric UI), then ticket 03. See "Open items" in `docs/design.md`
 
 ## Agent skills
 
