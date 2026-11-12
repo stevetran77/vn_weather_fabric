@@ -38,6 +38,7 @@ Data Engineer portfolio project on Microsoft Fabric (Trial), also used to prepar
 - Use [OK], [FAIL], [SUCCESS] instead of emoji in output
 - When something is unverified, say so explicitly; do not guess
 - The Fabric UI and the IDE write to the same `main` branch: run "Update all" in Fabric Source control before editing there, run `git pull --rebase` before pushing, and never edit the same item on both sides at once
+- Fabric re-serializes items it commits, so hand-written item files must match its format or Fabric shows them as changed: write `.platform` with no trailing newline, and prefer creating a new item in the Fabric UI, pulling it, then editing only its content in the IDE
 
 ## Project-specific notes
 - Open-Meteo: CC BY 4.0, free tier is non-commercial only; attribution is required in the README
