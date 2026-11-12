@@ -1,24 +1,36 @@
+# CI workflow: automatic checks that run after every push to `main`.
+#
+# What it does:  checks code style, runs the unit tests, validates the Fabric
+#                item folders, and scans the history for leaked secrets.
+# What it does NOT do:  deploy anything. Syncing the Fabric workspace is manual:
+#                open Fabric Source control and click "Update all" once CI is green.
 name: ci
 
-# Runs on every push to main (single-branch workflow). Syncing the Fabric
-# workspace is manual: run "Update all" in Fabric Source control after CI is green.
+# When the workflow runs:
+#  - on every push to main (this project uses a single branch, so there are no PR checks)
+#  - manually, with the "Run workflow" button on the GitHub Actions page
 on:
   push:
     branches: [main]
   workflow_dispatch:
 
+# The workflow only needs to read the repository. No write access, no cloud credentials.
 permissions:
   contents: read
 
 jobs:
   ci:
+    # A fresh Ubuntu virtual machine provided by GitHub for each run.
     runs-on: ubuntu-latest
     steps:
+      # Step 1: download the repository code onto the runner.
+      # fetch-depth 0 = full git history, so gitleaks (step 7) can scan old commits too.
       - name: Check out the repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      # Step 2: install Python 3.11 and cache downloaded packages to speed up later runs.
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -26,18 +38,29 @@ jobs:
           cache: pip
           cache-dependency-path: requirements-dev.txt
 
+      # Step 3: install the tools used below (ruff and pytest).
       - name: Install dev dependencies
         run: pip install -r requirements-dev.txt
 
+      # Step 4: lint = static code check. Finds unused imports, undefined names,
+      # likely bugs, unsorted imports, and outdated syntax. Rules are in pyproject.toml.
       - name: Lint with ruff
         run: ruff check .
 
+      # Step 5: run the unit tests in tests/. They use fake (mocked) data and never
+      # call real APIs, so they are fast and do not use any API quota.
       - name: Run unit tests
         run: pytest
 
+      # Step 6: check the Fabric items in the fabric/ folder without calling Fabric:
+      # every JSON and .platform file must parse, notebook code must compile, and each
+      # item folder must have a .platform file whose type matches the folder name.
       - name: Validate Fabric item folders
         run: python scripts/validate_fabric_items.py fabric
 
+      # Step 7: secret scan. gitleaks looks through the whole git history for
+      # passwords, tokens, and keys, and fails the run if it finds any.
+      # GITHUB_TOKEN is created automatically by GitHub; it is not a secret you manage.
       - name: Scan for secrets with gitleaks
         uses: gitleaks/gitleaks-action@v2
         env:

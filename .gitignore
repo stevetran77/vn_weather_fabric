@@ -4,3 +4,20 @@ __pycache__/
 *.pyc
 .pytest_cache/
 .ruff_cache/
+
+# Local environment and secrets (never commit)
+.env
+.env.*
+.venv/
+venv/
+
+# macOS and editor files
+.DS_Store
+.idea/
+.vscode/
+.ipynb_checkpoints/
+
+# Python build output
+*.egg-info/
+dist/
+build/
