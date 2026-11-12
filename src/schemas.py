@@ -79,3 +79,21 @@ DIM_DATE_DDL = _ddl(
         ("is_weekend", "boolean"),
     ]
 )
+
+DAILY_DDL = _ddl(
+    [
+        ("city_id", "long"),
+        ("date", "date"),
+        ("avg_pm2_5", "double"),
+        ("max_pm2_5", "double"),
+        ("avg_temperature_2m", "double"),
+        ("min_temperature_2m", "double"),
+        ("max_temperature_2m", "double"),
+        ("avg_relative_humidity_2m", "double"),
+        ("avg_wind_speed_10m", "double"),
+        ("total_precipitation", "double"),
+        ("hours_count", "long"),
+        ("pm2_5_hours_count", "long"),
+        ("is_above_pm2_5_threshold", "boolean"),
+    ]
+)
