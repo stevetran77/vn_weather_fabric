@@ -11,7 +11,7 @@
 
 # CELL ********************
 
-%pip install --force-reinstall --no-deps https://github.com/stevetran77/vn_weather_fabric/archive/refs/heads/main.zip%pip install --force-reinstall --no-deps https://github.com/stevetran77/vn_weather_fabric/archive/refs/heads/main.zip
+%pip install --force-reinstall --no-deps https://github.com/stevetran77/vn_weather_fabric/archive/refs/heads/main.zip
 
 # METADATA ********************
 
