@@ -26,7 +26,7 @@ table dim_city
 		dataType: double
 		lineageTag: c280bca1-cac5-444f-987d-ec0b2f3e01db
 		sourceLineageTag: latitude
-		summarizeBy: average
+		summarizeBy: sum
 		sourceColumn: latitude
 
 		annotation SummarizationSetBy = Automatic
@@ -37,7 +37,7 @@ table dim_city
 		dataType: double
 		lineageTag: 9acdcd47-3f97-453e-9b97-62bae6f602db
 		sourceLineageTag: longitude
-		summarizeBy: average
+		summarizeBy: sum
 		sourceColumn: longitude
 
 		annotation SummarizationSetBy = Automatic

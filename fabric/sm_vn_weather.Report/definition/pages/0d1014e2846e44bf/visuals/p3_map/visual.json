@@ -5,22 +5,7 @@
     "query": {
       "queryState": {
         "Category": {
-          "projections": [
-            {
-              "queryRef": "dim_city.city_name",
-              "field": {
-                "Column": {
-                  "Expression": {
-                    "SourceRef": {
-                      "Entity": "dim_city"
-                    }
-                  },
-                  "Property": "city_name"
-                }
-              },
-              "nativeQueryRef": "city_name"
-            }
-          ]
+          "projections": []
         },
         "X": {
           "projections": [
@@ -73,6 +58,24 @@
                 }
               },
               "nativeQueryRef": "Avg PM2.5"
+            }
+          ]
+        },
+        "Tooltips": {
+          "projections": [
+            {
+              "queryRef": "dim_city.city_name",
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dim_city"
+                    }
+                  },
+                  "Property": "city_name"
+                }
+              },
+              "nativeQueryRef": "city_name"
             }
           ]
         }
