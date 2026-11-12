@@ -26,6 +26,17 @@
                     }
                   }
                 ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Colour shows level: pale amber is lower, dark red is higher.",
+                    "textStyle": {
+                      "fontSize": "12pt",
+                      "fontWeight": "600"
+                    }
+                  }
+                ]
               }
             ]
           }
