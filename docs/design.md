@@ -70,8 +70,8 @@ Agreed on: 2026-11-12. Status: agreed after a design interview; not implemented 
 ## Identity and access (set up on 2026-11-12)
 - `de_vn_prod` is connected to GitHub (`stevetran77/vn_weather_fabric`, branch `main`, folder `/fabric`) with the user's own token
 - Tenant setting "Users can sync workspace items with GitHub repositories" is enabled for group `vn_fabric_cicd`, which now contains the signed-in user
-- Created for the CD experiment and no longer used (candidates for cleanup): Entra app `vn_weather_fabric_cicd` with its service principal and federated credentials, the service principal's Member role on `de_vn_prod`, and the tenant setting "Service principals can call Fabric public APIs"
-- GitHub Actions now uses no cloud credentials, so the repository has no secrets and no variables
+- The service principal created for the CD experiment (Entra app, service principal, federated credentials, workspace role) was deleted, and the tenant setting "Service principals can call Fabric public APIs" was turned off again
+- GitHub Actions uses no cloud credentials, so the repository has no secrets and no variables
 - GitHub's OIDC subject claim includes numeric owner and repo IDs (`repo:<owner>@<id>/<repo>@<id>:ref:...`); a federated credential must use that exact form
 
 ## Repo layout
@@ -122,6 +122,5 @@ Agreed on: 2026-11-12. Status: agreed after a design interview; not implemented 
 - Schema support in lakehouses (if the three lakehouses are ever merged into one)
 
 ## Open items
-- Decide whether to delete the unused Entra app, group membership, and service principal tenant setting
 - Build the pipeline: `src/` modules and tests, Fabric items under `fabric/`
 - Write the README (architecture diagram, limitations, manual sync step)
