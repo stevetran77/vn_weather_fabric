@@ -3,9 +3,9 @@
   "name": "p2_temp",
   "position": {
     "x": 40,
-    "y": 200,
+    "y": 240,
     "width": 900,
-    "height": 540,
+    "height": 500,
     "z": 3,
     "tabOrder": 3
   },
@@ -86,6 +86,60 @@
               "expr": {
                 "Literal": {
                   "Value": "'Avg temperature (C) vs average Model PM2.5, per City'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "subTitle": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "objects": {
+      "categoryLabels": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "categoryAxis": [
+        {
+          "properties": {
+            "showAxisTitle": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "valueAxis": [
+        {
+          "properties": {
+            "showAxisTitle": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
                 }
               }
             }

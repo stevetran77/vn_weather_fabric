@@ -50,8 +50,8 @@
       "color": "#404040"
     },
     "label": {
-      "fontSize": 10,
       "fontFace": "Segoe UI",
+      "fontSize": 12,
       "color": "#404040"
     },
     "callout": {
@@ -70,9 +70,9 @@
       "color": "#404040"
     },
     "dataTitle": {
-      "fontSize": 10,
       "fontFace": "Segoe UI",
-      "color": "#909090"
+      "fontSize": 12,
+      "color": "#6B6B6B"
     },
     "boldLabel": {
       "fontSize": 12,

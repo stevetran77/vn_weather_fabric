@@ -113,5 +113,6 @@ DAILY_DDL = _ddl(
         ("hours_count", "long"),
         ("pm2_5_hours_count", "long"),
         ("is_above_pm2_5_threshold", "boolean"),
+        ("refreshed_at", "timestamp"),
     ]
 )

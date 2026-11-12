@@ -3,9 +3,9 @@
   "name": "p1_days",
   "position": {
     "x": 1060,
-    "y": 360,
+    "y": 400,
     "width": 820,
-    "height": 680,
+    "height": 640,
     "z": 4,
     "tabOrder": 4
   },
@@ -43,11 +43,11 @@
                       "Entity": "fact_weather_daily"
                     }
                   },
-                  "Property": "Days Above PM2.5 Threshold"
+                  "Property": "City-Days Above PM2.5 Threshold"
                 }
               },
-              "queryRef": "fact_weather_daily.Days Above PM2.5 Threshold",
-              "nativeQueryRef": "Days Above PM2.5 Threshold"
+              "queryRef": "fact_weather_daily.City-Days Above PM2.5 Threshold",
+              "nativeQueryRef": "City-Days Above PM2.5 Threshold"
             }
           ]
         }
@@ -67,7 +67,20 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Days above the PM2.5 threshold, by month'"
+                  "Value": "'City-days above the PM2.5 threshold, by month'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "subTitle": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
                 }
               }
             }

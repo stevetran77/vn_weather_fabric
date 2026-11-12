@@ -7,7 +7,7 @@
         "Values": {
           "projections": [
             {
-              "queryRef": "fact_weather_daily.Days Above PM2.5 Threshold",
+              "queryRef": "fact_weather_daily.City-Days Above PM2.5 Threshold",
               "field": {
                 "Measure": {
                   "Expression": {
@@ -15,10 +15,10 @@
                       "Entity": "fact_weather_daily"
                     }
                   },
-                  "Property": "Days Above PM2.5 Threshold"
+                  "Property": "City-Days Above PM2.5 Threshold"
                 }
               },
-              "nativeQueryRef": "Days Above PM2.5 Threshold"
+              "nativeQueryRef": "City-Days Above PM2.5 Threshold"
             }
           ]
         }
@@ -33,7 +33,7 @@
                     "Entity": "fact_weather_daily"
                   }
                 },
-                "Property": "Days Above PM2.5 Threshold"
+                "Property": "City-Days Above PM2.5 Threshold"
               }
             },
             "direction": "Descending"
@@ -42,7 +42,21 @@
         "isDefaultSort": true
       }
     },
-    "objects": {},
+    "objects": {
+      "categoryLabels": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
     "drillFilterOtherVisuals": true,
     "visualContainerObjects": {
       "title": [
@@ -58,7 +72,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Days above the PM2.5 threshold'"
+                  "Value": "'City-days above the PM2.5 threshold'"
                 }
               }
             }
@@ -82,7 +96,7 @@
   },
   "position": {
     "x": 1280,
-    "y": 200,
+    "y": 240,
     "width": 600,
     "height": 140,
     "z": 0,

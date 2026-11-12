@@ -8,21 +8,21 @@ table fact_weather_daily
 		formatString: 0.0
 		lineageTag: c4e439d8-a8d9-4bd5-8b73-7da8f02be81d
 
-	/// Number of days whose mean Model PM2.5 is above the threshold set in nb_daily_aggregate (the pm2_5_threshold parameter; default is the WHO 24-hour guideline). Shows 0, not blank, when no day is above it.
-	measure 'Days Above PM2.5 Threshold' =
+	/// Number of city-days (one City on one local day) whose mean Model PM2.5 is above the threshold set in nb_daily_aggregate (the pm2_5_threshold parameter; default is the WHO 24-hour guideline). Shows 0, not blank, when no day is above it.
+	measure 'City-Days Above PM2.5 Threshold' =
 			CALCULATE ( COUNTROWS ( fact_weather_daily ), fact_weather_daily[is_above_pm2_5_threshold] = TRUE () ) + 0
 		formatString: #,0
 		lineageTag: b1cfb611-7074-4c9f-8d7d-1a9f0a0ac32e
 
-	/// Number of days that have a PM2.5 value (the denominator of the share below).
+	/// Number of city-days that have a PM2.5 value (the denominator of the share below).
 	measure 'Days With PM2.5' =
 			CALCULATE ( COUNTROWS ( fact_weather_daily ), NOT ISBLANK ( fact_weather_daily[avg_pm2_5] ) )
 		formatString: #,0
 		lineageTag: b7d19b5e-70dd-465e-9091-e47d8e8311f7
 
-	/// Share of days with a PM2.5 value that are above the threshold.
+	/// Share of city-days with a PM2.5 value that are above the threshold.
 	measure 'Pct Days Above Threshold' =
-			DIVIDE ( [Days Above PM2.5 Threshold], [Days With PM2.5] )
+			DIVIDE ( [City-Days Above PM2.5 Threshold], [Days With PM2.5] )
 		formatString: 0.0%
 		lineageTag: 565d4a73-5793-4eb7-8151-835a13002096
 
@@ -38,11 +38,17 @@ table fact_weather_daily
 		formatString: 0.0
 		lineageTag: 6dc14a11-78ff-473c-a942-881775d625b1
 
-	/// Sum of the daily rainfall (mm), for the rainfall vs PM2.5 visual.
-	measure 'Total Rainfall' =
-			SUM ( fact_weather_daily[total_precipitation] )
-		formatString: #,0.0
+	/// Mean daily rainfall (mm per day), for the rainfall vs PM2.5 visual.
+	measure 'Avg Daily Rainfall' =
+			AVERAGE ( fact_weather_daily[total_precipitation] )
+		formatString: 0.0
 		lineageTag: 92ff258f-a022-4695-9c67-f3c81b9bd310
+
+	/// When nb_daily_aggregate last rebuilt this table, in Vietnam time. The pipeline runs it after every data refresh.
+	measure 'Last Refresh' =
+			MAX ( fact_weather_daily[refreshed_at] )
+		formatString: dd mmm yyyy hh:mm
+		lineageTag: 93fe6f9b-8b3c-45ac-91ec-323e4f6e0d7d
 
 	column city_id
 		isHidden
@@ -181,6 +187,17 @@ table fact_weather_daily
 		sourceLineageTag: is_above_pm2_5_threshold
 		summarizeBy: none
 		sourceColumn: is_above_pm2_5_threshold
+
+		annotation SummarizationSetBy = Automatic
+
+	column refreshed_at
+		isHidden
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 7c7df90e-05c7-4021-8bf7-ef79519a6a43
+		sourceLineageTag: refreshed_at
+		summarizeBy: none
+		sourceColumn: refreshed_at
 
 		annotation SummarizationSetBy = Automatic
 

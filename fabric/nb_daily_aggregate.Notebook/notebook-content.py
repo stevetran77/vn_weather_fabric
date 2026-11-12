@@ -44,6 +44,7 @@ from pyspark.sql import functions as F
 import backfill
 import daily_aggregate
 import schemas
+import transforms
 
 spark.conf.set("spark.sql.session.timeZone", "UTC")
 
@@ -67,7 +68,10 @@ hourly = spark.read.format("delta").load(hourly_path)
 assert not hourly.isEmpty(), "fact_weather_hourly is empty: nothing to aggregate"
 hourly.createOrReplaceTempView("hourly")
 sql = daily_aggregate.build_daily_sql("hourly", pm2_5_threshold)
-daily = spark.sql(sql)
+# refreshed_at: when this rebuild ran, as Vietnam wall-clock time (shown in the report).
+daily = spark.sql(sql).withColumn(
+    "refreshed_at", F.from_utc_timestamp(F.current_timestamp(), transforms.LOCAL_ZONE.key)
+)
 daily.write.format("delta").mode("overwrite").option("overwriteSchema", "true").save(daily_path)
 print(f"[OK] wrote fact_weather_daily with threshold {pm2_5_threshold}")
 

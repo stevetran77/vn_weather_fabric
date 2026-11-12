@@ -11,7 +11,8 @@ def _aliases(sql: str) -> list[str]:
 
 def test_build_daily_sql_columns_match_daily_ddl():
     sql = daily_aggregate.build_daily_sql("hourly", 15)
-    assert _aliases(sql) == schemas.column_names(schemas.DAILY_DDL)
+    # `refreshed_at` is stamped by the notebook when it writes the table, not by the SQL.
+    assert _aliases(sql) + ["refreshed_at"] == schemas.column_names(schemas.DAILY_DDL)
 
 
 def test_build_daily_sql_uses_threshold_and_view():
