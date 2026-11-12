@@ -11,7 +11,12 @@
 
 # CELL ********************
 
-%pip install --force-reinstall --no-deps https://github.com/stevetran77/vn_weather_fabric/archive/refs/heads/main.zip
+# Same as the %pip magic, written as plain Python so the file always compiles.
+get_ipython().run_line_magic(
+    "pip",
+    "install --force-reinstall --no-deps "
+    "https://github.com/stevetran77/vn_weather_fabric/archive/refs/heads/main.zip",
+)
 
 # METADATA ********************
 
