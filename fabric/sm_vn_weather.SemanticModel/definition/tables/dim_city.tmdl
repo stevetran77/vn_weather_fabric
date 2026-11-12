@@ -1,0 +1,70 @@
+table dim_city
+	lineageTag: 5797afea-6731-49d0-9f94-30a1b32c5d8c
+	sourceLineageTag: [dbo].[dim_city]
+
+	column city_id
+		dataType: int64
+		formatString: 0
+		lineageTag: 0854ecc4-1a02-4764-b7f0-b66a8eb9be5e
+		sourceLineageTag: city_id
+		summarizeBy: sum
+		sourceColumn: city_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column city_name
+		dataType: string
+		lineageTag: 7d879fad-d786-4a5a-a3e9-061f18a16126
+		sourceLineageTag: city_name
+		summarizeBy: none
+		sourceColumn: city_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column latitude
+		dataType: double
+		lineageTag: c280bca1-cac5-444f-987d-ec0b2f3e01db
+		sourceLineageTag: latitude
+		summarizeBy: sum
+		sourceColumn: latitude
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column longitude
+		dataType: double
+		lineageTag: 9acdcd47-3f97-453e-9b97-62bae6f602db
+		sourceLineageTag: longitude
+		summarizeBy: sum
+		sourceColumn: longitude
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column province_code
+		dataType: int64
+		formatString: 0
+		lineageTag: 84112eb1-1e77-4bc1-9182-f5e7db5a3000
+		sourceLineageTag: province_code
+		summarizeBy: sum
+		sourceColumn: province_code
+
+		annotation SummarizationSetBy = Automatic
+
+	column province_name
+		dataType: string
+		lineageTag: 16075668-9685-4c24-949d-23e7214a51e9
+		sourceLineageTag: province_name
+		summarizeBy: none
+		sourceColumn: province_name
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_city = entity
+		mode: directLake
+		source
+			entityName: dim_city
+			expressionSource: 'DirectLake - lh_gold'
+

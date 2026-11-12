@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "SemanticModel",
+    "displayName": "sm_vn_weather"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "5596d61d-3886-b619-4fad-129030923595"
+  }
+}

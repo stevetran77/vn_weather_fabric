@@ -1,0 +1,148 @@
+table fact_weather_daily
+	lineageTag: 4cced7cf-ce08-4b62-9c1e-57c61e0fc6f4
+	sourceLineageTag: [dbo].[fact_weather_daily]
+
+	column city_id
+		dataType: int64
+		formatString: 0
+		lineageTag: 88f931a9-1592-4b05-b17e-3decee965c35
+		sourceLineageTag: city_id
+		summarizeBy: sum
+		sourceColumn: city_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column date
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 5a37519f-f908-4c91-b844-5ecd6d76201c
+		sourceLineageTag: date
+		summarizeBy: none
+		sourceColumn: date
+
+		annotation SummarizationSetBy = Automatic
+
+	column avg_pm2_5
+		dataType: double
+		lineageTag: 8d3b0c36-7a98-409b-81bb-1c7dbb87b7aa
+		sourceLineageTag: avg_pm2_5
+		summarizeBy: sum
+		sourceColumn: avg_pm2_5
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column max_pm2_5
+		dataType: double
+		lineageTag: a6e449ea-bece-4be3-8080-3a6d4e732ff6
+		sourceLineageTag: max_pm2_5
+		summarizeBy: sum
+		sourceColumn: max_pm2_5
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column avg_temperature_2m
+		dataType: double
+		lineageTag: 2c8016cc-5d7b-4c44-b182-cee786b4b9e7
+		sourceLineageTag: avg_temperature_2m
+		summarizeBy: sum
+		sourceColumn: avg_temperature_2m
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column min_temperature_2m
+		dataType: double
+		lineageTag: 9139b6d1-9f59-435d-9c64-8655cea1612d
+		sourceLineageTag: min_temperature_2m
+		summarizeBy: sum
+		sourceColumn: min_temperature_2m
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column max_temperature_2m
+		dataType: double
+		lineageTag: 8062590e-2b9c-4d52-b470-3506c9985092
+		sourceLineageTag: max_temperature_2m
+		summarizeBy: sum
+		sourceColumn: max_temperature_2m
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column avg_relative_humidity_2m
+		dataType: double
+		lineageTag: ad19dff0-e468-4ea6-8d52-8ced5c97f33b
+		sourceLineageTag: avg_relative_humidity_2m
+		summarizeBy: sum
+		sourceColumn: avg_relative_humidity_2m
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column avg_wind_speed_10m
+		dataType: double
+		lineageTag: c0339c54-bad9-49da-89b3-01c5ba870d91
+		sourceLineageTag: avg_wind_speed_10m
+		summarizeBy: sum
+		sourceColumn: avg_wind_speed_10m
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column total_precipitation
+		dataType: double
+		lineageTag: ff4748c1-6d31-479b-a7a1-3c58cefcd3f0
+		sourceLineageTag: total_precipitation
+		summarizeBy: sum
+		sourceColumn: total_precipitation
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column hours_count
+		dataType: int64
+		formatString: 0
+		lineageTag: 2fb79ab3-8578-458f-bfd4-5e751b90e23a
+		sourceLineageTag: hours_count
+		summarizeBy: sum
+		sourceColumn: hours_count
+
+		annotation SummarizationSetBy = Automatic
+
+	column pm2_5_hours_count
+		dataType: int64
+		formatString: 0
+		lineageTag: e5f68516-088c-4c97-bf1c-32b957496e50
+		sourceLineageTag: pm2_5_hours_count
+		summarizeBy: sum
+		sourceColumn: pm2_5_hours_count
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_above_pm2_5_threshold
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 42ff53d8-f41b-4c35-9e90-5f7f8e98c48d
+		sourceLineageTag: is_above_pm2_5_threshold
+		summarizeBy: none
+		sourceColumn: is_above_pm2_5_threshold
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fact_weather_daily = entity
+		mode: directLake
+		source
+			entityName: fact_weather_daily
+			expressionSource: 'DirectLake - lh_gold'
+
