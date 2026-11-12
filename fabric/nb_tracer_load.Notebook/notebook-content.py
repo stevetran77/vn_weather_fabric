@@ -11,7 +11,7 @@
 
 # CELL ********************
 
-# MAGIC %pip install --force-reinstall --no-deps https://github.com/stevetran77/vn_weather_fabric/archive/refs/heads/main.zip
+%pip install --force-reinstall --no-deps https://github.com/stevetran77/vn_weather_fabric/archive/refs/heads/main.zip%pip install --force-reinstall --no-deps https://github.com/stevetran77/vn_weather_fabric/archive/refs/heads/main.zip
 
 # METADATA ********************
 
@@ -33,10 +33,7 @@ end_date = "2026-10-26"
 
 # META {
 # META   "language": "python",
-# META   "language_group": "synapse_pyspark",
-# META   "tags": [
-# META     "parameters"
-# META   ]
+# META   "language_group": "synapse_pyspark"
 # META }
 
 # CELL ********************
