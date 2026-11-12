@@ -6,12 +6,7 @@ import schemas
 
 def _aliases(sql: str) -> list[str]:
     select = sql.split("FROM")[0]
-    names = []
-    for line in select.splitlines()[1:]:
-        line = line.strip().rstrip(",")
-        names.append(re.split(r"\s+AS\s+", line, flags=re.I)[-1].strip("`") if " AS " in line
-                     else line)
-    return names
+    return re.findall(r"^\s+(?:.*\bAS\s+)?`?(\w+)`?,?$", select, re.M)
 
 
 def test_build_daily_sql_columns_match_daily_ddl():

@@ -88,3 +88,20 @@ def test_build_dim_date_marks_weekends():
 def test_build_dim_date_rejects_reversed_range():
     with pytest.raises(ValueError):
         backfill.build_dim_date("2024-03-04", "2024-03-02")
+
+
+def test_season_of_splits_dry_and_wet_months():
+    assert backfill.season_of(11) == backfill.DRY_SEASON
+    assert backfill.season_of(4) == backfill.DRY_SEASON
+    assert backfill.season_of(5) == backfill.WET_SEASON
+    assert backfill.season_of(10) == backfill.WET_SEASON
+
+
+def test_season_labels_follow_the_month_split():
+    assert backfill.WET_SEASON == "Wet (May-Oct)"
+    assert backfill.DRY_SEASON == "Dry (Nov-Apr)"
+
+
+def test_build_dim_date_sets_season():
+    rows = backfill.build_dim_date("2024-04-30", "2024-05-01")
+    assert [row["season"] for row in rows] == [backfill.DRY_SEASON, backfill.WET_SEASON]

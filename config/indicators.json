@@ -1,0 +1,9 @@
+{
+  "country": "VNM",
+  "indicators": [
+    {"code": "SP.POP.TOTL", "name": "population"},
+    {"code": "NY.GDP.PCAP.CD", "name": "gdp_per_capita_usd"},
+    {"code": "SP.URB.TOTL.IN.ZS", "name": "urban_population_pct"},
+    {"code": "EN.ATM.PM25.MC.M3", "name": "pm2_5_mean_annual_exposure"}
+  ]
+}

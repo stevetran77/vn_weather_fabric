@@ -39,16 +39,18 @@ pm2_5_threshold = 15.0
 
 # CELL ********************
 
-import logging
+from pyspark.sql import functions as F
 
+import backfill
 import daily_aggregate
+import schemas
 
-logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 spark.conf.set("spark.sql.session.timeZone", "UTC")
 
 gold_root = notebookutils.lakehouse.get("lh_gold")["properties"]["abfsPath"]
 hourly_path = f"{gold_root}/Tables/fact_weather_hourly"
 daily_path = f"{gold_root}/Tables/fact_weather_daily"
+dim_date_path = f"{gold_root}/Tables/dim_date"
 
 # METADATA ********************
 
@@ -61,7 +63,9 @@ daily_path = f"{gold_root}/Tables/fact_weather_daily"
 
 # Rebuild the whole daily table from the hourly fact (about 34 Cities x 365 days x years rows,
 # small), so late corrections to provisional hours are picked up. Overwrite keeps reruns safe.
-spark.read.format("delta").load(hourly_path).createOrReplaceTempView("hourly")
+hourly = spark.read.format("delta").load(hourly_path)
+assert not hourly.isEmpty(), "fact_weather_hourly is empty: nothing to aggregate"
+hourly.createOrReplaceTempView("hourly")
 sql = daily_aggregate.build_daily_sql("hourly", pm2_5_threshold)
 daily = spark.sql(sql)
 daily.write.format("delta").mode("overwrite").option("overwriteSchema", "true").save(daily_path)
@@ -77,14 +81,37 @@ print(f"[OK] wrote fact_weather_daily with threshold {pm2_5_threshold}")
 # CELL ********************
 
 # Check: one row per (city_id, date), and a day never has more than 24 hours.
+# One pass over the table also gives the date range used for dim_date below.
 daily = spark.read.format("delta").load(daily_path)
-row_count = daily.count()
-distinct_keys = daily.select("city_id", "date").distinct().count()
-too_many_hours = daily.where("hours_count > 24").count()
-print("rows:", row_count, "| distinct keys:", distinct_keys, "| days with >24 hours:", too_many_hours)
-assert row_count == distinct_keys, "duplicate (city_id, date) rows"
-assert too_many_hours == 0, "a day has more than 24 hourly rows"
+stats = daily.agg(
+    F.count("*").alias("row_count"),
+    F.countDistinct("city_id", "date").alias("distinct_keys"),
+    F.sum(F.when(F.col("hours_count") > 24, 1).otherwise(0)).alias("too_many_hours"),
+    F.min("date").alias("first_date"),
+    F.max("date").alias("last_date"),
+).first()
+print(stats.asDict())
+assert stats.row_count > 0, "daily table is empty"
+assert stats.row_count == stats.distinct_keys, "duplicate (city_id, date) rows"
+assert stats.too_many_hours == 0, "a day has more than 24 hourly rows"
 print("[OK] daily table checks passed")
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+# Rebuild dim_date (with the season column) to cover exactly the days in the daily table.
+# This notebook is the only writer of dim_date.
+first_date, last_date = stats.first_date, stats.last_date
+dim_date_rows = backfill.build_dim_date(first_date.isoformat(), last_date.isoformat())
+(spark.createDataFrame(dim_date_rows, schemas.DIM_DATE_DDL)
+    .write.format("delta").mode("overwrite").option("overwriteSchema", "true").save(dim_date_path))
+print(f"[OK] dim_date: {first_date} to {last_date}, {len(dim_date_rows)} days")
 
 # METADATA ********************
 

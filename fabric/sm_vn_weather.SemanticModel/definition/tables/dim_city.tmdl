@@ -3,6 +3,7 @@ table dim_city
 	sourceLineageTag: [dbo].[dim_city]
 
 	column city_id
+		isHidden
 		dataType: int64
 		formatString: 0
 		lineageTag: 0854ecc4-1a02-4764-b7f0-b66a8eb9be5e

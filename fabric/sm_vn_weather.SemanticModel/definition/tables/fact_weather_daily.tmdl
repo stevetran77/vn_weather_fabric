@@ -2,7 +2,50 @@ table fact_weather_daily
 	lineageTag: 4cced7cf-ce08-4b62-9c1e-57c61e0fc6f4
 	sourceLineageTag: [dbo].[fact_weather_daily]
 
+	/// Mean of the daily mean Model PM2.5 (ug/m3) in the current filter context. Model data (CAMS, about 45 km), not a station measurement.
+	measure 'Avg PM2.5' =
+			AVERAGE ( fact_weather_daily[avg_pm2_5] )
+		formatString: 0.0
+		lineageTag: c4e439d8-a8d9-4bd5-8b73-7da8f02be81d
+
+	/// Number of days whose mean Model PM2.5 is above the threshold set in nb_daily_aggregate (the pm2_5_threshold parameter; default is the WHO 24-hour guideline). Shows 0, not blank, when no day is above it.
+	measure 'Days Above PM2.5 Threshold' =
+			CALCULATE ( COUNTROWS ( fact_weather_daily ), fact_weather_daily[is_above_pm2_5_threshold] = TRUE () ) + 0
+		formatString: #,0
+		lineageTag: b1cfb611-7074-4c9f-8d7d-1a9f0a0ac32e
+
+	/// Number of days that have a PM2.5 value (the denominator of the share below).
+	measure 'Days With PM2.5' =
+			CALCULATE ( COUNTROWS ( fact_weather_daily ), NOT ISBLANK ( fact_weather_daily[avg_pm2_5] ) )
+		formatString: #,0
+		lineageTag: b7d19b5e-70dd-465e-9091-e47d8e8311f7
+
+	/// Share of days with a PM2.5 value that are above the threshold.
+	measure 'Pct Days Above Threshold' =
+			DIVIDE ( [Days Above PM2.5 Threshold], [Days With PM2.5] )
+		formatString: 0.0%
+		lineageTag: 565d4a73-5793-4eb7-8151-835a13002096
+
+	/// Rolling 30-day mean of daily Model PM2.5, ending on the last date in the current filter context. It averages city-days, so a City with missing days weighs less, and near the start of the data the window holds fewer than 30 days.
+	measure 'PM2.5 Rolling 30d' =
+			CALCULATE ( [Avg PM2.5], DATESINPERIOD ( dim_date[date], MAX ( dim_date[date] ), -30, DAY ) )
+		formatString: 0.0
+		lineageTag: 4546938b-38c7-4dd6-8f0c-e9b12fc9d1ee
+
+	/// Mean of the daily mean temperature (C) at 2 m, for the temperature vs PM2.5 visual.
+	measure 'Avg Temperature' =
+			AVERAGE ( fact_weather_daily[avg_temperature_2m] )
+		formatString: 0.0
+		lineageTag: 6dc14a11-78ff-473c-a942-881775d625b1
+
+	/// Sum of the daily rainfall (mm), for the rainfall vs PM2.5 visual.
+	measure 'Total Rainfall' =
+			SUM ( fact_weather_daily[total_precipitation] )
+		formatString: #,0.0
+		lineageTag: 92ff258f-a022-4695-9c67-f3c81b9bd310
+
 	column city_id
+		isHidden
 		dataType: int64
 		formatString: 0
 		lineageTag: 88f931a9-1592-4b05-b17e-3decee965c35
@@ -13,6 +56,7 @@ table fact_weather_daily
 		annotation SummarizationSetBy = Automatic
 
 	column date
+		isHidden
 		dataType: dateTime
 		formatString: General Date
 		lineageTag: 5a37519f-f908-4c91-b844-5ecd6d76201c

@@ -1,8 +1,10 @@
 table dim_date
+	dataCategory: Time
 	lineageTag: 5aea239f-cb82-49b3-83e0-4930b1e9a8ed
 	sourceLineageTag: [dbo].[dim_date]
 
 	column date_key
+		isHidden
 		dataType: int64
 		formatString: 0
 		lineageTag: fada3685-2774-4d47-931d-df2c96bc51e4
@@ -13,6 +15,7 @@ table dim_date
 		annotation SummarizationSetBy = Automatic
 
 	column date
+		isKey
 		dataType: dateTime
 		formatString: General Date
 		lineageTag: 04b48b72-afba-4242-a895-c4c1e0864a0b
@@ -58,6 +61,16 @@ table dim_date
 		sourceLineageTag: month_name
 		summarizeBy: none
 		sourceColumn: month_name
+		sortByColumn: month
+
+		annotation SummarizationSetBy = Automatic
+
+	column season
+		dataType: string
+		lineageTag: 8bdf7022-5c53-42d5-b6ae-052f5f76e90a
+		sourceLineageTag: season
+		summarizeBy: none
+		sourceColumn: season
 
 		annotation SummarizationSetBy = Automatic
 

@@ -81,3 +81,9 @@ def test_build_gold_rows_accepts_a_per_hour_source_function():
 
 def test_build_merge_condition_matches_on_key():
     assert transforms.build_merge_condition() == "t.city_id = s.city_id AND t.ts = s.ts"
+
+
+def test_build_merge_condition_accepts_other_key_columns():
+    assert transforms.build_merge_condition(("a", "b", "c")) == (
+        "t.a = s.a AND t.b = s.b AND t.c = s.c"
+    )

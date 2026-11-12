@@ -7,8 +7,10 @@ This is a Data Engineer portfolio project, also used to prepare for the DP-700 e
 ## Status
 
 - Done: city config and geocoding, Bronze to Gold load for one city and one week (tracer), idempotent merge, CI
-- Written, not yet run in Fabric: the 34-city Backfill notebook (`nb_backfill`), `dim_city`, `dim_date`
-- Planned: daily refresh, data quality checks, World Bank yearly indicators, Power BI report, near-real-time branch and dashboard
+- Written: the 34-city Backfill notebook (`nb_backfill`, which builds `dim_city`), the daily refresh (`nb_daily_refresh`, `pl_daily_refresh`) and the data quality checks (`src/quality.py`)
+- Daily aggregate: `nb_daily_aggregate` builds `fact_weather_daily` (one row per City and local day) and `dim_date` (with a dry/wet `season` column); `fact_weather_daily` has data in Fabric
+- Power BI: the Direct Lake on OneLake semantic model `sm_vn_weather` (relationships, season, DAX measures) and a two-page report are written; the report has not been checked in the Fabric UI yet, and its "Insights and recommendations" text is not written
+- Planned: World Bank yearly indicators, near-real-time branch and dashboard
 
 The agreed design is in [`docs/design.md`](docs/design.md); domain terms are in [`GLOSSARY.md`](GLOSSARY.md).
 
@@ -22,12 +24,21 @@ World Bank (planned) ─────────┘                       │
                                           lh_silver (Delta, cleaned, UTC)
                                                       │
                                                       v
-                              lh_gold (Delta: fact_weather_hourly, dim_city, dim_date)
+                              lh_gold (Delta: fact_weather_hourly, dim_city)
+                                                      │  nb_daily_aggregate
+                                                      v
+                              lh_gold (Delta: fact_weather_daily, dim_date)
+                                                      │
+                                                      v
+                              sm_vn_weather (Direct Lake on OneLake) ──> Power BI report
 ```
 
 - The plain Python logic lives in `src/` and is tested outside Fabric; notebooks only import it and call it
 - Writes use a Delta `MERGE` on `(city_id, ts)`, so rerunning a load adds no duplicates
 - Timestamps are UTC in Bronze and Silver; Gold adds a local-time column (`Asia/Ho_Chi_Minh`)
+- Days in `fact_weather_daily` are cut on local time and leave out forecast hours; a day is above the PM2.5 threshold when its mean Model PM2.5 is above the `pm2_5_threshold` notebook parameter (default 15 ug/m3, the WHO 24-hour guideline)
+- `dim_date` has a single writer, `nb_daily_aggregate`, which rebuilds it to cover the days in `fact_weather_daily`
+- The report splits the year into a dry season (November to April) and a wet season (May to October); this is a coarse national split, and the real seasons differ by region
 
 ## Data sources and attribution
 
@@ -61,7 +72,7 @@ World Bank (planned) ─────────┘                       │
 
 ### What is the difference between `src/backfill.py` and `nb_backfill`?
 
-- `src/backfill.py` is a module of small functions: split a date range into chunks, plan the requests, estimate the Open-Meteo call cost, and build `dim_date`. It calls no API and writes nothing, so `pytest` can test it on any machine
+- `src/backfill.py` is a module of small functions: split a date range into chunks, plan the requests, estimate the Open-Meteo call cost, and build the `dim_date` rows. It calls no API and writes nothing, so `pytest` can test it on any machine
 - `nb_backfill` is the Fabric notebook that runs the Backfill. It uses those functions to fetch data, write Bronze Parquet, and merge Silver and Gold Delta tables with Spark
 - The same split applies to the other modules and notebooks: logic in `src/`, orchestration in the notebook
 

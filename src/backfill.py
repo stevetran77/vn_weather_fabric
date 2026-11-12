@@ -12,6 +12,19 @@ MONTH_NAMES = (
     "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December",
 )
+# Season split used by the report: wet from May to October, dry the rest of the year.
+# A coarse national split; the real season differs by region. The labels are built from the
+# month numbers below so they cannot drift apart from the split.
+WET_FIRST_MONTH, WET_LAST_MONTH = 5, 10
+WET_MONTHS = range(WET_FIRST_MONTH, WET_LAST_MONTH + 1)
+
+
+def _season_label(name: str, first_month: int, last_month: int) -> str:
+    return f"{name} ({MONTH_NAMES[first_month - 1][:3]}-{MONTH_NAMES[last_month - 1][:3]})"
+
+
+WET_SEASON = _season_label("Wet", WET_FIRST_MONTH, WET_LAST_MONTH)
+DRY_SEASON = _season_label("Dry", WET_LAST_MONTH % 12 + 1, WET_FIRST_MONTH - 1)
 DAY_NAMES = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
 
 
@@ -74,6 +87,11 @@ def estimate_plan_cost(plan: list[dict], variable_count: int) -> float:
     return total
 
 
+def season_of(month: int) -> str:
+    """Return the season label of a calendar month (1-12)."""
+    return WET_SEASON if month in WET_MONTHS else DRY_SEASON
+
+
 def build_dim_date(start_date: str, end_date: str) -> list[dict]:
     """Build one dim_date row per local calendar day in the inclusive range."""
     first, last = _parse_range(start_date, end_date)
@@ -89,6 +107,7 @@ def build_dim_date(start_date: str, end_date: str) -> list[dict]:
                 "quarter": (day.month - 1) // 3 + 1,
                 "month": day.month,
                 "month_name": MONTH_NAMES[day.month - 1],
+                "season": season_of(day.month),
                 "day": day.day,
                 "day_of_week": weekday + 1,
                 "day_name": DAY_NAMES[weekday],

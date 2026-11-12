@@ -96,9 +96,9 @@ def build_gold_rows(
     ]
 
 
-def build_merge_condition() -> str:
-    """Build the Delta MERGE match condition `t.city_id = s.city_id AND t.ts = s.ts`.
+def build_merge_condition(key_columns: tuple[str, ...] = KEY_COLUMNS) -> str:
+    """Build the Delta MERGE match condition, `t.city_id = s.city_id AND t.ts = s.ts` by default.
 
     `t` is the target table alias and `s` the source alias.
     """
-    return " AND ".join(f"t.{column} = s.{column}" for column in KEY_COLUMNS)
+    return " AND ".join(f"t.{column} = s.{column}" for column in key_columns)

@@ -17,7 +17,11 @@ Checked on: 2026-11-12 (the research agent called each endpoint with curl). [UNV
 
 ### Dimension / enrichment
 - provinces.open-api.vn: use `/api/v1/` (63 old provinces) or v2 (34 provinces after the 2025 merger). Community-run; SLA and license [UNVERIFIED]
-- World Bank API (`api.worldbank.org/v2/country/VNM/indicator/...`): no key, JSON, paginated, yearly data. License CC BY 4.0 [UNVERIFIED]
+- World Bank API (`api.worldbank.org/v2/country/VNM/indicator/...`): no key, JSON, paginated (`pages` and `total` in the first element of the response), yearly data. Checked 2026-11-12
+  - Indicators used (`config/indicators.json`): population (`SP.POP.TOTL`, 1960-2025), GDP per capita (`NY.GDP.PCAP.CD`, 1985-2025), urban population share (`SP.URB.TOTL.IN.ZS`, 1960-2025), PM2.5 mean annual exposure (`EN.ATM.PM25.MC.M3`, 1990-2023); years without a value are dropped in Silver
+  - License: the World Bank Data Catalog states that datasets the World Bank produces itself are CC BY 4.0 (attribution required, changes must be indicated); datasets from third parties carry their own license, labelled on each dataset
+  - The PM2.5 indicator comes from a third party (Global Burden of Disease Study 2023, IHME, per the indicator metadata). Its own license was not checked [UNVERIFIED]; the dataset page for the exact license is still to be read
+  - Reliability: on 2026-11-12 the API answered some new queries with HTTP 502 or took more than 20 s, while repeated queries came back in 0.2 s; the client therefore retries with a long timeout
 
 ## Alternatives considered
 

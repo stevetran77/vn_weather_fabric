@@ -1,0 +1,7 @@
+relationship cc4bee1d-4679-410c-91b4-38b1a0005411
+	fromColumn: fact_weather_daily.city_id
+	toColumn: dim_city.city_id
+
+relationship 77a1ba83-dfe7-489d-a9a3-1afc79004680
+	fromColumn: fact_weather_daily.date
+	toColumn: dim_date.date

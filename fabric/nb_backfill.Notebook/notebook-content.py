@@ -73,7 +73,6 @@ silver_path = f"{lakehouse_root('lh_silver')}/Tables/observation"
 gold_root = lakehouse_root("lh_gold")
 gold_path = f"{gold_root}/Tables/fact_weather_hourly"
 dim_city_path = f"{gold_root}/Tables/dim_city"
-dim_date_path = f"{gold_root}/Tables/dim_date"
 ingest_date = date.today().isoformat()
 
 
@@ -109,7 +108,7 @@ def write_bronze(rows, variables, dataset):
 
 # CELL ********************
 
-# Resolve the selected Cities, then build and write the two dimensions.
+# Resolve the selected Cities, then build and write dim_city.
 all_cities = http_json.get_json(config_url)["cities"]
 unknown = set(city_names) - {city["name"] for city in all_cities}
 if unknown:
@@ -122,8 +121,7 @@ overwrite_delta(
     schemas.DIM_CITY_DDL,
     dim_city_path,
 )
-overwrite_delta(backfill.build_dim_date(start_date, end_date), schemas.DIM_DATE_DDL, dim_date_path)
-print(f"[OK] dim_city: {len(resolved)} Cities, dim_date: {start_date} to {end_date}")
+print(f"[OK] dim_city: {len(resolved)} Cities (dim_date is built by nb_daily_aggregate)")
 
 # METADATA ********************
 
