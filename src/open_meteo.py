@@ -1,10 +1,10 @@
 """Fetch hourly Observations (weather and Model PM2.5) from the Open-Meteo historical APIs."""
 
-import json
 import logging
 from collections.abc import Callable, Sequence
 from urllib.parse import urlencode
-from urllib.request import urlopen
+
+from http_json import HttpJsonError, get_json
 
 logger = logging.getLogger(__name__)
 
@@ -13,6 +13,9 @@ AIR_QUALITY_URL = "https://air-quality-api.open-meteo.com/v1/air-quality"
 WEATHER_VARIABLES = ("temperature_2m", "relative_humidity_2m", "precipitation", "wind_speed_10m")
 AIR_QUALITY_VARIABLES = ("pm2_5",)
 REQUEST_TIMEOUT_SECONDS = 60
+# The free tier allows 600 calls per minute, so a rate-limited call waits 15, 30, 60 seconds.
+RETRY_ATTEMPTS = 4
+RETRY_BASE_DELAY_SECONDS = 15
 
 
 class OpenMeteoError(Exception):
@@ -58,13 +61,12 @@ def build_air_quality_url(
 
 
 def fetch_json(url: str) -> dict | list:
-    """GET a URL and return the decoded JSON body."""
+    """GET a URL and return the decoded JSON body, retrying rate limits and server errors."""
     logger.info("GET %s", url)
     try:
-        with urlopen(url, timeout=REQUEST_TIMEOUT_SECONDS) as response:  # noqa: S310 (fixed https URL)
-            return json.load(response)
-    except OSError as error:
-        raise OpenMeteoError(f"Request failed: {error}") from error
+        return get_json(url, REQUEST_TIMEOUT_SECONDS, RETRY_ATTEMPTS, RETRY_BASE_DELAY_SECONDS)
+    except HttpJsonError as error:
+        raise OpenMeteoError(str(error)) from error
 
 
 def split_locations(payload: dict | list) -> list[dict]:

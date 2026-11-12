@@ -6,7 +6,8 @@ import sys
 from collections.abc import Callable
 from pathlib import Path
 from urllib.parse import urlencode
-from urllib.request import urlopen
+
+from http_json import HttpJsonError, get_json
 
 logger = logging.getLogger(__name__)
 
@@ -43,9 +44,7 @@ def build_search_url(search_name: str) -> str:
 
 def fetch_results(search_name: str) -> list[dict]:
     """Call the geocoding API and return its raw result list (empty when nothing matches)."""
-    url = build_search_url(search_name)
-    with urlopen(url, timeout=REQUEST_TIMEOUT_SECONDS) as response:  # noqa: S310 (fixed https URL)
-        payload = json.load(response)
+    payload = get_json(build_search_url(search_name), REQUEST_TIMEOUT_SECONDS)
     return payload.get("results", [])
 
 
@@ -72,7 +71,7 @@ def resolve_city(city: dict, fetch: Callable[[str], list[dict]] = fetch_results)
     name = city["name"]
     try:
         results = fetch(city["search_name"])
-    except OSError as error:
+    except HttpJsonError as error:
         logger.error("Lookup failed for %s: %s", name, error)
         raise GeocodingError(f"Lookup failed for {name}: {error}") from error
     picked = pick_city(results)

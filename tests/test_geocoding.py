@@ -1,9 +1,9 @@
-import io
 import json
 
 import pytest
 
 import geocoding
+from http_json import HttpJsonError
 
 HANOI = {
     "name": "Hanoi", "feature_code": "PPLC", "country_code": "VN",
@@ -63,7 +63,7 @@ def test_resolve_city_rejects_wrong_place():
 
 def test_resolve_city_wraps_network_error():
     def failing_fetch(_name):
-        raise OSError("network down")
+        raise HttpJsonError("network down")
 
     with pytest.raises(geocoding.GeocodingError, match="network down"):
         geocoding.resolve_city(CITY_CONFIG, fetch=failing_fetch)
@@ -90,14 +90,12 @@ def test_default_config_lists_one_city_per_province():
 
 
 def test_fetch_results_parses_response(monkeypatch):
-    body = io.BytesIO(json.dumps({"results": [HANOI]}).encode("utf-8"))
-    monkeypatch.setattr(geocoding, "urlopen", lambda url, timeout: body)
+    monkeypatch.setattr(geocoding, "get_json", lambda url, timeout: {"results": [HANOI]})
     assert geocoding.fetch_results("Hanoi") == [HANOI]
 
 
 def test_fetch_results_handles_no_match(monkeypatch):
-    body = io.BytesIO(json.dumps({"generationtime_ms": 0.2}).encode("utf-8"))
-    monkeypatch.setattr(geocoding, "urlopen", lambda url, timeout: body)
+    monkeypatch.setattr(geocoding, "get_json", lambda url, timeout: {"generationtime_ms": 0.2})
     assert geocoding.fetch_results("Nowhere") == []
 
 

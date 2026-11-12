@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Notebook",
+    "displayName": "nb_backfill"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "a791ed63-665e-40b2-8d81-b0140a6f057d"
+  }
+}

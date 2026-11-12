@@ -1,9 +1,7 @@
-import io
-import json
-
 import pytest
 
 import open_meteo
+from http_json import HttpJsonError
 
 HOURLY = {
     "latitude": 21.0,
@@ -85,16 +83,29 @@ def test_fetch_hourly_returns_rows_per_location():
     assert locations[0][0]["temperature_2m"] == 17.5
 
 
-def test_fetch_json_decodes_body(monkeypatch):
-    body = io.BytesIO(json.dumps(HOURLY).encode())
-    monkeypatch.setattr(open_meteo, "urlopen", lambda _url, timeout: body)
+def test_fetch_json_passes_retry_settings(monkeypatch):
+    calls = []
+
+    def fake_get_json(url, timeout, attempts, base_delay):
+        calls.append((url, timeout, attempts, base_delay))
+        return HOURLY
+
+    monkeypatch.setattr(open_meteo, "get_json", fake_get_json)
     assert open_meteo.fetch_json("https://example.test") == HOURLY
+    assert calls == [
+        (
+            "https://example.test",
+            open_meteo.REQUEST_TIMEOUT_SECONDS,
+            open_meteo.RETRY_ATTEMPTS,
+            open_meteo.RETRY_BASE_DELAY_SECONDS,
+        )
+    ]
 
 
-def test_fetch_json_wraps_network_errors(monkeypatch):
-    def fail(_url, timeout):
-        raise OSError("boom")
+def test_fetch_json_wraps_http_errors(monkeypatch):
+    def fail(*_args):
+        raise HttpJsonError("boom")
 
-    monkeypatch.setattr(open_meteo, "urlopen", fail)
+    monkeypatch.setattr(open_meteo, "get_json", fail)
     with pytest.raises(open_meteo.OpenMeteoError):
         open_meteo.fetch_json("https://example.test")
