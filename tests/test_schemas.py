@@ -13,6 +13,16 @@ def test_column_names_strips_quotes():
     assert schemas.column_names("`a` long, `b` string") == ["a", "b"]
 
 
+def test_column_types_maps_names_to_ddl_types():
+    assert schemas.column_types("`a` long, `b` string") == {"a": "long", "b": "string"}
+
+
+def test_dq_results_ddl_columns():
+    assert schemas.column_names(schemas.DQ_RESULTS_DDL) == [
+        "run_time", "check_name", "status", "count",
+    ]
+
+
 def test_ddl_quotes_every_column_name():
     assert schemas.DIM_DATE_DDL.startswith("`date_key` int, `date` date")
 

@@ -12,9 +12,15 @@ def _doubles(names: tuple[str, ...]) -> list[tuple[str, str]]:
     return [(name, "double") for name in names]
 
 
+def column_types(ddl: str) -> dict[str, str]:
+    """Return {column name: DDL type} for a DDL string built by this module."""
+    pairs = (part.split() for part in ddl.split(", "))
+    return {name.strip("`"): data_type for name, data_type in pairs}
+
+
 def column_names(ddl: str) -> list[str]:
-    """Return the column names of a DDL string built by this module."""
-    return [part.split()[0].strip("`") for part in ddl.split(", ")]
+    """Return the column names of a DDL string built by this module, in order."""
+    return list(column_types(ddl))
 
 
 def bronze_ddl(variables: tuple[str, ...]) -> str:
@@ -38,6 +44,15 @@ SILVER_DDL = _ddl(
 )
 
 GOLD_DDL = SILVER_DDL + ", " + _ddl([("ts_local", "timestamp"), ("source", "string")])
+
+DQ_RESULTS_DDL = _ddl(
+    [
+        ("run_time", "timestamp"),
+        ("check_name", "string"),
+        ("status", "string"),
+        ("count", "long"),
+    ]
+)
 
 DIM_CITY_DDL = _ddl(
     [

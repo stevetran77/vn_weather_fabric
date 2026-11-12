@@ -57,6 +57,7 @@ from pyspark.sql import functions as F
 
 import backfill
 import open_meteo
+import quality
 import refresh
 import schemas
 import transforms
@@ -75,6 +76,7 @@ silver_path = f"{lakehouse_root('lh_silver')}/Tables/observation"
 gold_root = lakehouse_root("lh_gold")
 gold_path = f"{gold_root}/Tables/fact_weather_hourly"
 dim_city_path = f"{gold_root}/Tables/dim_city"
+dq_results_path = f"{gold_root}/Tables/dq_results"
 
 
 def merge_delta(rows, ddl, path):
@@ -86,6 +88,12 @@ def merge_delta(rows, ddl, path):
             .whenMatchedUpdateAll().whenNotMatchedInsertAll().execute())
     else:
         frame.write.format("delta").save(path)
+
+
+def append_results(results):
+    """Append data quality check results to the results table in lh_gold."""
+    (spark.createDataFrame(results, schemas.DQ_RESULTS_DDL)
+        .write.format("delta").mode("append").save(dq_results_path))
 
 
 def write_bronze(rows, variables, dataset):
@@ -179,10 +187,17 @@ print(f"[OK] fetched {len(gold_rows)} hourly rows ({len(silver_rows)} finished) 
 
 # CELL ********************
 
-# Write Bronze, then merge Silver and Gold. A day with no rows is skipped, not an error.
+# Check the rows first: a schema error or duplicate key stops the run before anything is
+# written (the results are saved either way); null PM2.5 only warns.
+# Then write Bronze and merge Silver and Gold. A day with no rows is skipped, not an error.
 if not gold_rows:
     print("[OK] no rows returned, nothing to write")
 else:
+    checks = quality.run_row_checks("silver", silver_rows, schemas.SILVER_DDL, now)
+    checks += quality.run_row_checks("gold", gold_rows, schemas.GOLD_DDL, now)
+    append_results(checks)
+    quality.raise_on_failure(checks)
+    print(f"[OK] {len(checks)} data quality checks, no failure")
     write_bronze(bronze_weather, open_meteo.WEATHER_VARIABLES, "weather")
     write_bronze(bronze_air, open_meteo.AIR_QUALITY_VARIABLES, "air_quality")
     merge_delta(silver_rows, schemas.SILVER_DDL, silver_path)
@@ -218,7 +233,12 @@ print("[OK] Bronze partitions registered")
 window_start = windows["archive"][0]
 gold = spark.read.format("delta").load(gold_path).where(F.col("ts") >= F.lit(window_start).cast("timestamp"))
 gold.groupBy(F.to_date("ts").alias("day"), "source").count().orderBy("day", "source").show(40, truncate=False)
-print("rows:", gold.count(), "| distinct keys:", gold.select("city_id", "ts").distinct().count())
+row_count = gold.count()
+distinct_keys = gold.select("city_id", "ts").distinct().count()
+print("rows:", row_count, "| distinct keys:", distinct_keys)
+table_checks = [quality.check_duplicate_count("gold_table", row_count - distinct_keys, now)]
+append_results(table_checks)
+quality.raise_on_failure(table_checks)
 
 # METADATA ********************
 
