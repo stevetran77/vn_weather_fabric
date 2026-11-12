@@ -52,6 +52,14 @@ def test_hourly_to_rows_transposes_columns():
     ]
 
 
+def test_hourly_to_rows_converts_integers_to_float_and_keeps_none():
+    payload = {"hourly": {"time": ["2024-01-01T00:00", "2024-01-01T01:00"], "humidity": [85, None]}}
+    rows = open_meteo.hourly_to_rows(payload)
+    assert rows[0]["humidity"] == 85.0
+    assert isinstance(rows[0]["humidity"], float)
+    assert rows[1]["humidity"] is None
+
+
 def test_hourly_to_rows_rejects_missing_block():
     with pytest.raises(open_meteo.OpenMeteoError):
         open_meteo.hourly_to_rows({"error": True})

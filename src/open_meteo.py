@@ -78,7 +78,11 @@ def hourly_to_rows(location_payload: dict) -> list[dict]:
     if not hourly or "time" not in hourly:
         raise OpenMeteoError("Response has no hourly block")
     times = hourly["time"]
-    columns = {name: values for name, values in hourly.items() if name != "time"}
+    columns = {
+        name: [None if value is None else float(value) for value in values]
+        for name, values in hourly.items()
+        if name != "time"
+    }
     for name, values in columns.items():
         if len(values) != len(times):
             raise OpenMeteoError(f"Column {name} has {len(values)} values for {len(times)} hours")
