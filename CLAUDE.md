@@ -32,7 +32,7 @@ Data Engineer portfolio project on Microsoft Fabric (Trial), also used to prepar
 
 ## Rules
 - Never commit secrets, API keys or tokens, even in test files
-- Do not hardcode environment-specific values (workspace IDs, etc.): use GitHub variables. If hardcoding is unavoidable, ask for approval first and explain why. The list of city names in the config file is approved
+- Do not hardcode environment-specific values (workspace IDs, etc.): use GitHub variables. If hardcoding is unavoidable, ask for approval first and explain why. The list of city names in the config file is approved. Approved: a notebook may bind `lh_bronze` as its default lakehouse (Fabric writes the lakehouse and workspace IDs into the notebook metadata) so it can run `MSCK REPAIR TABLE` on the Bronze tables
 - Ask for approval before writing a new markdown file
 - Never run `git commit` or `git push` on your own: wait for the user to ask explicitly, every time
 - Use [OK], [FAIL], [SUCCESS] instead of emoji in output

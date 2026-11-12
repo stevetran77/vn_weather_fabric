@@ -31,6 +31,14 @@ def test_build_weather_url_several_locations_uses_commas():
     assert "longitude=105.8,106.7" in url
 
 
+def test_build_forecast_url_uses_forecast_endpoint_and_weather_variables():
+    url = open_meteo.build_forecast_url([21.0], [105.8], "2024-01-01", "2024-01-07")
+    assert url.startswith(open_meteo.FORECAST_URL)
+    assert "start_date=2024-01-01" in url
+    assert "end_date=2024-01-07" in url
+    assert "hourly=temperature_2m,relative_humidity_2m,precipitation,wind_speed_10m" in url
+
+
 def test_build_air_quality_url_requests_pm25():
     url = open_meteo.build_air_quality_url([21.0], [105.8], "2024-01-01", "2024-01-07")
     assert url.startswith(open_meteo.AIR_QUALITY_URL)

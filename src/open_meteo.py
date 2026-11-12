@@ -9,6 +9,7 @@ from http_json import HttpJsonError, get_json
 logger = logging.getLogger(__name__)
 
 ARCHIVE_URL = "https://archive-api.open-meteo.com/v1/archive"
+FORECAST_URL = "https://api.open-meteo.com/v1/forecast"
 AIR_QUALITY_URL = "https://air-quality-api.open-meteo.com/v1/air-quality"
 WEATHER_VARIABLES = ("temperature_2m", "relative_humidity_2m", "precipitation", "wind_speed_10m")
 AIR_QUALITY_VARIABLES = ("pm2_5",)
@@ -49,6 +50,13 @@ def build_weather_url(
 ) -> str:
     """Build the historical (ERA5) weather request URL; dates are YYYY-MM-DD."""
     return _build_url(ARCHIVE_URL, latitudes, longitudes, start_date, end_date, WEATHER_VARIABLES)
+
+
+def build_forecast_url(
+    latitudes: Sequence[float], longitudes: Sequence[float], start_date: str, end_date: str
+) -> str:
+    """Build the Forecast API weather URL for recent past days (provisional values)."""
+    return _build_url(FORECAST_URL, latitudes, longitudes, start_date, end_date, WEATHER_VARIABLES)
 
 
 def build_air_quality_url(

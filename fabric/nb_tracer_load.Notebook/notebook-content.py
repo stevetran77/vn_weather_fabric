@@ -122,7 +122,7 @@ bronze_air = transforms.to_bronze_rows(city, "air_quality", air_raw, ingest_date
 def write_bronze(rows, variables, dataset):
     path = f"{bronze_root}/Files/bronze/open_meteo/{dataset}"
     (spark.createDataFrame(rows, bronze_schema(variables))
-        .write.mode("overwrite").partitionBy("ingest_date").parquet(path))
+        .write.mode("overwrite").partitionBy("ingest_date", "city_id").parquet(path))
     return path
 
 
