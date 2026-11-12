@@ -72,5 +72,12 @@ def test_build_gold_rows_adds_local_time_and_source():
     assert rows[0]["source"] == "archive"
 
 
+def test_build_gold_rows_accepts_a_per_hour_source_function():
+    rows = transforms.build_gold_rows(
+        silver(), source=lambda ts: "provisional" if ts.hour == 0 else "forecast"
+    )
+    assert [row["source"] for row in rows] == ["provisional", "forecast"]
+
+
 def test_build_merge_condition_matches_on_key():
     assert transforms.build_merge_condition() == "t.city_id = s.city_id AND t.ts = s.ts"

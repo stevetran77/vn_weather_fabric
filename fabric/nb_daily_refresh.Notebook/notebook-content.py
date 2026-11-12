@@ -27,8 +27,8 @@ get_ipython().run_line_magic(
 
 # CELL ********************
 
-# Parameters. run_date is empty for a normal run (today, UTC); set it to YYYY-MM-DD to test.
-run_date = ""
+# Parameters. run_time is empty for a normal run (now, UTC); set it to YYYY-MM-DDTHH:MM (UTC) to test.
+run_time = ""
 cities_per_request = 34
 
 # METADATA ********************
@@ -41,8 +41,6 @@ cities_per_request = 34
 # CELL ********************
 
 import logging
-from datetime import date
-
 from delta.tables import DeltaTable
 from pyspark.sql import functions as F
 
@@ -104,10 +102,10 @@ cities = [
     }
     for row in spark.read.format("delta").load(dim_city_path).orderBy("city_id").collect()
 ]
-today = date.fromisoformat(run_date) if run_date else date.today()
-ingest_date = today.isoformat()
-windows = refresh.refresh_windows(today)
-print(f"{len(cities)} Cities; windows: {windows}")
+now = refresh.resolve_now(run_time)
+ingest_date = now.date().isoformat()
+windows = refresh.refresh_windows(now.date())
+print(f"{len(cities)} Cities; now: {now.isoformat()}; windows: {windows}")
 
 # METADATA ********************
 
@@ -118,7 +116,8 @@ print(f"{len(cities)} Cities; windows: {windows}")
 
 # CELL ********************
 
-# Fetch both windows for all Cities: Forecast API (provisional) and historical API (final).
+# Fetch both windows for all Cities: Forecast API (`recent`: provisional past hours and forecast
+# future hours) and historical API (`archive`: final). Silver keeps finished hours only.
 def fetch_window(build_url, start_date, end_date):
     """Fetch one window; return {city_id: hourly rows}. One request covers a batch of Cities."""
     rows_by_city = {}
@@ -138,25 +137,27 @@ def fetch_window(build_url, start_date, end_date):
     return rows_by_city
 
 
-weather_builders = {
-    "forecast": open_meteo.build_forecast_url,
-    "archive": open_meteo.build_weather_url,
+# Per window: Bronze API name, weather URL builder, and the Gold source label (or function).
+window_sources = {
+    "recent": ("forecast", open_meteo.build_forecast_url, lambda ts: refresh.label_recent_source(ts, now)),
+    "archive": ("archive", open_meteo.build_weather_url, refresh.ARCHIVE),
 }
 bronze_weather, bronze_air, silver_rows, gold_rows = [], [], [], []
-for source, (start_date, end_date) in windows.items():
-    weather = fetch_window(weather_builders[source], start_date, end_date)
+for window, (start_date, end_date) in windows.items():
+    api_name, build_url, gold_label = window_sources[window]
+    weather = fetch_window(build_url, start_date, end_date)
     air = fetch_window(open_meteo.build_air_quality_url, start_date, end_date)
-    source_weather, source_air = [], []
+    window_weather, window_air = [], []
     for city in cities:
         city_id = city["province_code"]
-        source_weather += transforms.to_bronze_rows(city, source, weather[city_id], ingest_date)
-        source_air += transforms.to_bronze_rows(city, "air_quality", air[city_id], ingest_date)
-    silver = transforms.build_silver_rows(source_weather, source_air)
-    bronze_weather += source_weather
-    bronze_air += source_air
-    silver_rows += silver
-    gold_rows += transforms.build_gold_rows(silver, source=source)
-print(f"[OK] fetched {len(silver_rows)} hourly rows for {len(cities)} Cities")
+        window_weather += transforms.to_bronze_rows(city, api_name, weather[city_id], ingest_date)
+        window_air += transforms.to_bronze_rows(city, "air_quality", air[city_id], ingest_date)
+    silver = transforms.build_silver_rows(window_weather, window_air)
+    bronze_weather += window_weather
+    bronze_air += window_air
+    gold_rows += transforms.build_gold_rows(silver, source=gold_label)
+    silver_rows += refresh.drop_future_hours(silver, now)
+print(f"[OK] fetched {len(gold_rows)} hourly rows ({len(silver_rows)} finished) for {len(cities)} Cities")
 
 # METADATA ********************
 
@@ -168,14 +169,14 @@ print(f"[OK] fetched {len(silver_rows)} hourly rows for {len(cities)} Cities")
 # CELL ********************
 
 # Write Bronze, then merge Silver and Gold. A day with no rows is skipped, not an error.
-if not silver_rows:
+if not gold_rows:
     print("[OK] no rows returned, nothing to write")
 else:
     write_bronze(bronze_weather, open_meteo.WEATHER_VARIABLES, "weather")
     write_bronze(bronze_air, open_meteo.AIR_QUALITY_VARIABLES, "air_quality")
     merge_delta(silver_rows, schemas.SILVER_DDL, silver_path)
     merge_delta(gold_rows, schemas.GOLD_DDL, gold_path)
-    print(f"[OK] merged {len(gold_rows)} rows into Silver and Gold")
+    print(f"[OK] merged {len(silver_rows)} rows into Silver and {len(gold_rows)} into Gold")
 
 # METADATA ********************
 
@@ -201,10 +202,11 @@ print("[OK] Bronze partitions registered")
 
 # CELL ********************
 
-# Check Gold for the 14 refreshed days: expect 34 Cities x 24 h per day per source, no duplicates.
+# Check Gold for the refreshed days (15 days incl. today): expect 34 Cities x 24 h per day, split
+# over archive, provisional and forecast, no duplicate keys.
 window_start = windows["archive"][0]
 gold = spark.read.format("delta").load(gold_path).where(F.col("ts") >= F.lit(window_start).cast("timestamp"))
-gold.groupBy("source", F.to_date("ts").alias("day")).count().orderBy("day").show(20, truncate=False)
+gold.groupBy(F.to_date("ts").alias("day"), "source").count().orderBy("day", "source").show(40, truncate=False)
 print("rows:", gold.count(), "| distinct keys:", gold.select("city_id", "ts").distinct().count())
 
 # METADATA ********************

@@ -37,10 +37,12 @@ Agreed on: 2026-11-12. Status: agreed after a design interview; not implemented 
   - `fact_vn_indicator_yearly`: World Bank indicators per year
   - `agg_city_daily`: daily aggregate for reporting
 - One-time backfill from 2022-09-01 (first date with air quality data) using the historical (ERA5) API
-- Daily run (the historical API lags about 5 days, so recent days come from the Forecast API):
-  - Fetch the last 7 days with `past_days=7` from the Forecast and Air Quality APIs, tag rows `source = forecast`
-  - Re-fetch the days 8 to 14 days ago from the historical API, tag rows `source = archive`, replacing provisional values
-  - Write with Delta `MERGE` on (`city_id`, `ts`)
+- Refresh run, every 2 hours (the historical API lags about 5 days, so recent days come from the Forecast API):
+  - Fetch the 7 days before today and all of today from the Forecast and Air Quality APIs. Hours already over are tagged `source = provisional`, hours still to come `source = forecast`
+  - Re-fetch the days 8 to 14 days ago from the historical API, tag rows `source = archive` (final values, replacing provisional ones)
+  - Write with Delta `MERGE` on (`city_id`, `ts`): a `forecast` hour becomes `provisional` and then `archive` on later runs
+  - Gold holds all three sources; Silver holds finished hours only (no predictions)
+  - About 136 Open-Meteo calls per run (about 1,632 per day), measured from `X-RateLimit-Cost`
 - Timestamps are stored in UTC in Bronze and Silver; Gold adds a local-time column (`Asia/Ho_Chi_Minh`)
 - `dim_city` maps each City to its Province by the Province code in the config (provinces.open-api.vn v2); a City name and its Province name may differ after the 2025 merger
 

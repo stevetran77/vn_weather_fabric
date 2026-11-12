@@ -21,7 +21,7 @@ The one-time load of all historical Observations from 2022-09-01.
 _Avoid_: Initial import, history load
 
 **Refresh window**:
-The most recent 7 days that every daily run fetches again from the Forecast API, because the historical API lags about 5 days.
+The 7 days before today plus today itself, which every refresh run fetches again from the Forecast API, because the historical API lags about 5 days. Each hour carries a source: `forecast` (not over yet), `provisional` (over, not final), or `archive` (final, from the historical API).
 _Avoid_: Incremental window, lookback
 
 **Model PM2.5**:

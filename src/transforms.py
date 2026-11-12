@@ -1,6 +1,7 @@
 """Plain-Python transforms from raw Open-Meteo rows to Bronze, Silver, and Gold rows."""
 
 import logging
+from collections.abc import Callable
 from datetime import UTC, datetime
 from functools import cache
 from operator import itemgetter
@@ -12,7 +13,6 @@ logger = logging.getLogger(__name__)
 
 KEY_COLUMNS = ("city_id", "ts")
 LOCAL_ZONE = ZoneInfo("Asia/Ho_Chi_Minh")
-ARCHIVE_SOURCE = "archive"
 
 
 def to_bronze_rows(
@@ -77,13 +77,21 @@ def build_silver_rows(
     return sorted(weather.values(), key=itemgetter(*KEY_COLUMNS))
 
 
-def build_gold_rows(silver_rows: list[dict], source: str) -> list[dict]:
+def build_gold_rows(
+    silver_rows: list[dict], source: str | Callable[[datetime], str]
+) -> list[dict]:
     """Shape Silver rows into the hourly fact: add the local-time column and the source tag.
 
-    `source` has no default so a caller cannot mislabel rows (`archive` or `forecast`).
+    `source` is a label for every row, or a function of the row's `ts` that returns the label.
+    It has no default so a caller cannot mislabel rows.
     """
+    label = source if callable(source) else (lambda _ts: source)
     return [
-        {**row, "ts_local": row["ts"].astimezone(LOCAL_ZONE).replace(tzinfo=None), "source": source}
+        {
+            **row,
+            "ts_local": row["ts"].astimezone(LOCAL_ZONE).replace(tzinfo=None),
+            "source": label(row["ts"]),
+        }
         for row in silver_rows
     ]
 
