@@ -10,7 +10,7 @@
         "startDateTime": "2026-11-12T18:23:00",
         "endDateTime": "2026-11-19T23:59:00",
         "localTimeZoneId": "SE Asia Standard Time",
-        "interval": 120
+        "interval": 90
       }
     }
   ]
