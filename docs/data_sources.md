@@ -13,7 +13,7 @@ Checked on: 2026-11-12 (the research agent called each endpoint with curl). [UNV
 - Air quality (`air-quality-api.open-meteo.com`): hourly PM2.5, available since 2022-09 (CAMS Global ~45 km; model data, not station measurements)
 - Current (`api.open-meteo.com/v1/forecast`): updated every 900 s; plan is to poll every 2 hours and send to an Eventstream (micro-batch, not a true stream)
 - Response is columnar (a `time` array plus value arrays); coordinates are snapped to a grid; default timezone is GMT (`Asia/Ho_Chi_Minh` not tested)
-- Planned cities: Hanoi, Ho Chi Minh City, Da Nang, Hai Phong, Can Tho, Hue
+- Planned cities: one representative City per Province (34), see `config/cities.json`
 
 ### Dimension / enrichment
 - provinces.open-api.vn: use `/api/v1/` (63 old provinces) or v2 (34 provinces after the 2025 merger). Community-run; SLA and license [UNVERIFIED]

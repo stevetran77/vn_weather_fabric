@@ -9,19 +9,21 @@ Agreed on: 2026-11-12. Status: agreed after a design interview; not implemented 
 - Data comes from APIs (no CSV files), stored as Parquet/Delta
 
 ## Business questions
-- How do PM2.5 levels change by city and by season over the years?
+- How do PM2.5 levels change by city (one representative City per Province) and by season over the years?
 - Which cities have the most days above the recommended PM2.5 threshold each month?
 - Do temperature, rainfall, and PM2.5 correlate (per city, per hour)?
 - The real-time dashboard only shows the latest Reading and the trend of the day; it does not answer the questions above
 
 ## Data
-- Main source: Open-Meteo (weather and air quality) for 6 cities: Hanoi, Ho Chi Minh City, Da Nang, Hai Phong, Can Tho, Hue
+- Main source: Open-Meteo (weather and air quality) for 34 cities, one representative City per Province of the 34-province structure (scope widened from 6 cities on 2026-11-12)
 - Dimension: provinces.open-api.vn; yearly enrichment: World Bank API (VNM)
 - Source details and risks: see `docs/data_sources.md`
 - Open-Meteo license: CC BY 4.0, free tier is non-commercial only, attribution required
 - PM2.5 is CAMS model data (~45 km), not station measurements
-- The list of 6 city names lives in a small config file in the repo (approved hardcoding: it is configuration, not data). Names are English without diacritics (`Hanoi`, `Ho Chi Minh City`, `Da Nang`, `Hai Phong`, `Can Tho`, `Hue`) because the Geocoding API returned a wrong place for `Ha Noi` with diacritics
-- Coordinates are resolved at ingest with the Open-Meteo Geocoding API (filter `countryCode=VN`, pick the result with a major-city feature code such as PPLC/PPLA or the highest population) and stored in `dim_city`; they are not hardcoded
+- The list of 34 cities lives in `config/cities.json` (approved hardcoding: it is configuration, not data). Each entry has the Province code (provinces.open-api.vn v2), the City `name`, and a `search_name` for geocoding. Names are English without diacritics because the Geocoding API returned a wrong place for `Ha Noi` with diacritics
+- A City is a major city of its Province chosen by hand (for example Nha Trang for Khanh Hoa), not the geometric centre or the official seat. Searching by Province name failed or returned a wrong place for 14 of 34 Provinces, so the config uses city names; `search_name` differs from `name` where the API needs another spelling (`Haiphong`, `Qui Nhon`)
+- Data for one point per Province is a coarse view of a Province; the README must say so
+- Coordinates are resolved at ingest with the Open-Meteo Geocoding API (filter `countryCode=VN`, pick the populated place (feature code starting with PPL) with the highest population; places without a population are skipped) and stored in `dim_city`; they are not hardcoded
 - Domain vocabulary is defined in `GLOSSARY.md`
 
 ## Data architecture
@@ -29,7 +31,7 @@ Agreed on: 2026-11-12. Status: agreed after a design interview; not implemented 
 - Silver, Gold: Delta tables
 - Three separate lakehouses: `lh_bronze`, `lh_silver`, `lh_gold`
 - Gold (small star schema):
-  - `dim_city`: 6 cities, coordinates, Province
+  - `dim_city`: 34 cities, coordinates, Province
   - `dim_date`
   - `fact_weather_hourly`: grain (city, hour), weather and PM2.5 combined, with a `source` column
   - `fact_vn_indicator_yearly`: World Bank indicators per year
@@ -40,10 +42,10 @@ Agreed on: 2026-11-12. Status: agreed after a design interview; not implemented 
   - Re-fetch the days 8 to 14 days ago from the historical API, tag rows `source = archive`, replacing provisional values
   - Write with Delta `MERGE` on (`city_id`, `ts`)
 - Timestamps are stored in UTC in Bronze and Silver; Gold adds a local-time column (`Asia/Ho_Chi_Minh`)
-- `dim_city` maps each City to a Province using the 34-province structure (provinces.open-api.vn v2); a City name and its Province name may differ after the 2025 merger
+- `dim_city` maps each City to its Province by the Province code in the config (provinces.open-api.vn v2); a City name and its Province name may differ after the 2025 merger
 
 ## Near-real-time branch
-- A notebook calls the Open-Meteo `current` endpoint for 6 cities every 2 hours and sends events to an Eventstream (custom endpoint), stored in an Eventhouse (KQL)
+- A notebook calls the Open-Meteo `current` endpoint for 34 cities every 2 hours and sends events to an Eventstream (custom endpoint), stored in an Eventhouse (KQL)
 - This is micro-batch, not a true stream; the README must say so
 - Separate pipeline from the daily batch pipeline
 - Data from this branch does not go into Gold
@@ -104,7 +106,7 @@ Agreed on: 2026-11-12. Status: agreed after a design interview; not implemented 
 - Before then, capture screenshots and a short video of the report and dashboard, store them in `docs/`, and embed them in the README
 
 ## Definition of done
-- 6 cities backfilled; daily pipeline and 2-hour pipeline run on schedule
+- 34 cities backfilled; daily pipeline and 2-hour pipeline run on schedule
 - Gold tables populated; basic data quality checks run in notebooks
 - Power BI Direct Lake report and Real-Time Dashboard are viewable
 - CI is green on every push to `main`, and `de_vn_prod` is synced with "Update all" afterwards
@@ -116,6 +118,8 @@ Agreed on: 2026-11-12. Status: agreed after a design interview; not implemented 
 - Dev/test environments, `fabric-cicd`, automated CD, Deployment Pipelines, advanced Purview/lineage, Data Activator, ML
 
 ## Unverified (check during implementation)
+- How Open-Meteo counts a request with several comma-separated locations against the free-tier limits (10,000 calls/day); the pricing page only says long time ranges count as several calls (about 3 calls for 4 weeks). Rough estimate, not measured: a 4-year Backfill for 34 cities and 2 APIs may use about 10,000 calls, so it may need to be split across days. Measure in ticket 03
+- Volume of 34 cities x 4 years of hourly data against the Trial capacity
 - How to store the Eventstream custom endpoint connection key without hardcoding it
 - Licenses of World Bank data and provinces.open-api.vn
 - Whether the Trial keeps scheduled pipelines running for the full 60 days

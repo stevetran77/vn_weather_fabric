@@ -8,7 +8,7 @@ Data Engineer portfolio project on Microsoft Fabric (Trial), also used to prepar
 - `GLOSSARY.md`: domain vocabulary (City, Observation, Reading, Backfill, Refresh window, Model PM2.5, Province)
 
 ## Architecture summary
-- Sources: Open-Meteo (6 Vietnamese cities), provinces.open-api.vn, World Bank
+- Sources: Open-Meteo (34 cities, one per Province), provinces.open-api.vn, World Bank
 - Batch: Bronze (Parquet) -> Silver, Gold (Delta); lakehouses `lh_bronze`, `lh_silver`, `lh_gold`
 - Near-real-time: notebook polls every 2 hours -> Eventstream -> Eventhouse (micro-batch, not a true stream)
 - A single workspace `de_vn_prod`, connected to GitHub (`main`, Git folder `fabric/`); no dev/test environment
@@ -34,6 +34,7 @@ Data Engineer portfolio project on Microsoft Fabric (Trial), also used to prepar
 - Never commit secrets, API keys or tokens, even in test files
 - Do not hardcode environment-specific values (workspace IDs, etc.): use GitHub variables. If hardcoding is unavoidable, ask for approval first and explain why. The list of city names in the config file is approved
 - Ask for approval before writing a new markdown file
+- Never run `git commit` or `git push` on your own: wait for the user to ask explicitly, every time
 - Use [OK], [FAIL], [SUCCESS] instead of emoji in output
 - When something is unverified, say so explicitly; do not guess
 - The Fabric UI and the IDE write to the same `main` branch: run "Update all" in Fabric Source control before editing there, run `git pull --rebase` before pushing, and never edit the same item on both sides at once

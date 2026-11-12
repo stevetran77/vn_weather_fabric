@@ -1,11 +1,11 @@
 # vn_weather_fabric
 
-Weather and air quality data for Vietnamese cities, loaded into Microsoft Fabric as a batch history plus a near-real-time snapshot feed.
+Weather and air quality data for one representative city per Vietnamese province, loaded into Microsoft Fabric as a batch history plus a near-real-time snapshot feed.
 
 ## Language
 
 **City**:
-A Vietnamese city from the configured list whose weather and air quality are tracked.
+The representative city of one Province (34 in total), from the configured list, whose weather and air quality are tracked. It is a major city in the Province, not the geometric centre of the Province or its official seat.
 _Avoid_: Location, station, site
 
 **Observation**:
