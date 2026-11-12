@@ -1,0 +1,60 @@
+name: cd_probe
+
+# Manual probe: checks whether the service principal can call the Fabric
+# Git APIs (status and Update From Git) on the Git-connected workspace.
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log in to Azure with OIDC
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          allow-no-subscriptions: true
+
+      - name: Fabric Git status
+        id: status
+        env:
+          WORKSPACE_ID: ${{ vars.FABRIC_WORKSPACE_ID }}
+        run: |
+          set +e
+          url="https://api.fabric.microsoft.com/v1/workspaces/${WORKSPACE_ID}/git/status"
+          az rest --method GET --resource https://api.fabric.microsoft.com --url "$url" -o json > status.json 2> status.err
+          code=$?
+          echo "exit code: $code"
+          cat status.err
+          if [ $code -eq 0 ]; then
+            echo "workspace_head=$(jq -r '.workspaceHead' status.json)" >> "$GITHUB_OUTPUT"
+            echo "remote_commit_hash=$(jq -r '.remoteCommitHash' status.json)" >> "$GITHUB_OUTPUT"
+            echo "change_count=$(jq '.changes | length' status.json)"
+          fi
+          exit 0
+
+      - name: Fabric Update From Git
+        env:
+          WORKSPACE_ID: ${{ vars.FABRIC_WORKSPACE_ID }}
+          WORKSPACE_HEAD: ${{ steps.status.outputs.workspace_head }}
+          REMOTE_COMMIT_HASH: ${{ steps.status.outputs.remote_commit_hash }}
+        run: |
+          set +e
+          if [ -z "$REMOTE_COMMIT_HASH" ]; then
+            echo "[FAIL] Git status step did not return hashes; skipping Update From Git"
+            exit 0
+          fi
+          url="https://api.fabric.microsoft.com/v1/workspaces/${WORKSPACE_ID}/git/updateFromGit"
+          body=$(jq -n --arg h "$WORKSPACE_HEAD" --arg r "$REMOTE_COMMIT_HASH" \
+            '{workspaceHead:$h, remoteCommitHash:$r, conflictResolution:{conflictResolutionType:"Workspace", conflictResolutionPolicy:"PreferRemote"}, options:{allowOverrideItems:true}}')
+          az rest --method POST --resource https://api.fabric.microsoft.com --url "$url" --headers "Content-Type=application/json" --body "$body" -o json > update.json 2> update.err
+          code=$?
+          echo "exit code: $code"
+          cat update.err
+          cat update.json
+          exit 0
