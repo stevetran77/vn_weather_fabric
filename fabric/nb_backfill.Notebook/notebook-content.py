@@ -31,7 +31,7 @@ get_ipython().run_line_magic(
 # end_date must be at least 10 days in the past (the historical API lags about 5 days).
 start_date = "2022-09-01"
 end_date = "2026-10-31"
-city_names = ["Hanoi", "Da Nang", "Ho Chi Minh City"]
+city_names = []
 days_per_chunk = 366
 daily_call_budget = 9000
 config_url = "https://raw.githubusercontent.com/stevetran77/vn_weather_fabric/main/config/cities.json"
