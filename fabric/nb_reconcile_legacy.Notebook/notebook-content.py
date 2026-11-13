@@ -25,7 +25,7 @@ get_ipython().run_line_magic(
 # META   "language_group": "synapse_pyspark"
 # META }
 
-# CELL ********************
+# PARAMETERS CELL ********************
 
 # Parameters. The pipeline pl_legacy_migrate copied per-City-per-month aggregates computed in
 # the Legacy source to Bronze under
