@@ -36,15 +36,36 @@ Agreed on: 2026-11-12. Status: agreed after a design interview; not implemented 
   - `fact_weather_hourly`: grain (city, hour), weather and PM2.5 combined, with a `source` column
   - `fact_vn_indicator_yearly`: World Bank indicators per year
   - `agg_city_daily`: daily aggregate for reporting
-- One-time backfill from 2022-09-01 (first date with air quality data) using the historical (ERA5) API
+- One-time backfill from the Cutover date (2024-01-01) using the historical (ERA5) API; Observations from 2022-09-01 (first date with air quality data) to 2023-12-31 come from the Legacy source (see "On-premises migration")
 - Refresh run, every 2 hours (the historical API lags about 5 days, so recent days come from the Forecast API):
   - Fetch the 7 days before today and all of today from the Forecast and Air Quality APIs. Hours already over are tagged `source = provisional`, hours still to come `source = forecast`
   - Re-fetch the days 8 to 14 days ago from the historical API, tag rows `source = archive` (final values, replacing provisional ones)
   - Write with Delta `MERGE` on (`city_id`, `ts`): a `forecast` hour becomes `provisional` and then `archive` on later runs
-  - Gold holds all three sources; Silver holds finished hours only (no predictions)
+  - Gold holds all sources (`forecast`, `provisional`, `archive`, and `legacy` for migrated rows); Silver holds finished hours only (no predictions)
   - About 136 Open-Meteo calls per run (about 1,632 per day), measured from `X-RateLimit-Cost`
 - Timestamps are stored in UTC in Bronze and Silver; Gold adds a local-time column (`Asia/Ho_Chi_Minh`)
 - `dim_city` maps each City to its Province by the Province code in the config (provinces.open-api.vn v2); a City name and its Province name may differ after the 2025 merger
+
+## On-premises migration
+Status: agreed on 2026-11-13; in progress (the access path was proven on 2026-11-13, see ticket `onprem-migration/01`). Time-boxed to about 3-4 working days; it is an extension and is cut first if time runs out (it must not block the definition of done).
+
+- Purpose: a portfolio story (legacy system moved to the cloud, verified) and practice for DP-700 (on-premises ingest, gateway, pipeline copy)
+- Legacy source: a simulated on-premises SQL Server 2022 (Developer edition) in a Docker container on the user's Mac (`legacy_source/`: `docker-compose.yml`, `init_legacy_db.sql`; passwords in a gitignored `.env`). The image is x64 only and runs under emulation on Apple Silicon; stability under a large load is not verified. The port is bound to the Mac address of the Fusion NAT network only, not to the home network. Believed free of charge (Fusion Pro personal-use terms and SQL Server Developer terms not verified in this session)
+- Why Docker and not the VM: SQL Server has no ARM64 build and its installer failed to run on Windows 11 ARM according to Microsoft Q&A threads (community answers, no official documentation); the install was not tried in the VM
+- Content: Observations from 2022-09-01 to 2023-12-31, loaded once from the ERA5 API into the database. The README states that the source is simulated and filled from the same ERA5 data
+- Access: an on-premises data gateway (`gw_legacy_onprem`) installed in a Windows 11 ARM VM (VMware Fusion Pro) on the same Mac; the gateway is Windows only, no container support, per Microsoft docs. It ran on Windows ARM and reached SQL Server through the Fusion NAT address of the Mac (the Fabric connection `cn_legacy_sqlserver` uses a read-only login `fabric_reader`). That address depends on the Fusion network and can change after a restart. Fallback if the setup breaks: export files from the database and upload them to OneLake, with no gateway
+- Path: Copy activity in a pipeline writes Parquet to `lh_bronze` `Files/` (partitioned by ingest date), then the same Silver notebook, then Gold with `source = legacy`
+- Idempotent: Delta `MERGE` on (`city_id`, `ts`), so the Migration can be re-run safely
+- Cutover date `2024-01-01` lives in `config/` (business boundary, not an environment value; hardcoding approved on 2026-11-13)
+  - The Migration writes only `ts` before the Cutover date; the Backfill writes only from it
+  - A row outside its range stops the pipeline with an error
+  - Continuity check around the boundary: 2023-12-31 23:00 and 2024-01-01 00:00 exist for all 34 Cities
+- Reconciliation (results go to the data quality table in `lh_gold`):
+  - Row counts equal per City and month
+  - Sum, min and max of key columns (temperature, PM2.5) equal
+  - No duplicate keys and no missing hours from 2022-09-01 to 2023-12-31
+- Current state: the first Backfill (ticket `vn-weather-pipeline/04`, 2026-11-12) loaded the API data from 2022-09-01. The Migration ticket replaces the rows of 2022-09-01 to 2023-12-31 in Silver and Gold by the Legacy rows, then the boundary guards apply
+- Cutover: the data is historical, so no parallel run and no incremental load (a deliberate choice, stated in the README). After the Migration is verified the database is set read-only and marked decommissioned. Rollback is re-running the Migration, not restoring the database
 
 ## Near-real-time branch
 - A notebook calls the Open-Meteo `current` endpoint for 34 cities every 2 hours and sends events to an Eventstream (custom endpoint), stored in an Eventhouse (KQL)
@@ -127,6 +148,9 @@ Agreed on: 2026-11-12. Status: agreed after a design interview; not implemented 
 - Whether the Trial keeps scheduled pipelines running for the full 60 days
 - Schema support in lakehouses (if the three lakehouses are ever merged into one)
 
+- Whether SQL Server 2022 in Docker under x64 emulation stays stable while loading about 1.2 million rows (Apple Silicon); personal-use terms of Fusion Pro and costs of SQL Server Developer (believed free, not checked)
+
 ## Open items
+- On-premises migration: split into tickets (VM and database setup, seed from ERA5, gateway and pipeline, reconciliation checks, boundary checks, README section)
 - Build the pipeline: `src/` modules and tests, Fabric items under `fabric/` (`src/geocoding.py` and `config/cities.json` done)
 - Write the README (architecture diagram, limitations, manual sync step)

@@ -1,0 +1,20 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: legacy_sqlserver
+    platform: linux/amd64  # SQL Server has no ARM64 image; runs under emulation on Apple Silicon
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: Developer
+      MSSQL_SA_PASSWORD: ${SA_PASSWORD:?set SA_PASSWORD in legacy_source/.env}
+    ports:
+      # Bind to the VM-facing address only, not to the whole home network
+      - "${BIND_IP:?set BIND_IP in legacy_source/.env}:1433:1433"
+    volumes:
+      - legacy_sqlserver_data:/var/opt/mssql
+    restart: unless-stopped
+
+volumes:
+  legacy_sqlserver_data:
+    external: true
+    name: legacy_sqlserver_data
