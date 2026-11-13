@@ -35,6 +35,7 @@ ingest_date = ""  # empty means today (UTC)
 city_code = 0
 start_date = "2022-09-01"
 end_date = "2024-01-01"
+cutover_config_url = "https://raw.githubusercontent.com/stevetran77/vn_weather_fabric/main/config/cutover.json"
 
 # METADATA ********************
 
@@ -51,6 +52,8 @@ from datetime import UTC, datetime
 from delta.tables import DeltaTable
 from pyspark.sql import functions as F
 
+import cutover
+import http_json
 import legacy_mapping
 import schemas
 import transforms
@@ -80,6 +83,11 @@ print(f"[INFO] mode={mode}, city_code={city_code}, range={start_date} to {end_da
 # The UTC window of the range.
 window_start = datetime.fromisoformat(start_date).replace(tzinfo=UTC)
 window_end = datetime.fromisoformat(end_date).replace(tzinfo=UTC)
+
+# The Migration only writes before the Cutover date: stop before touching any data.
+cutover_ts = cutover.parse_cutover(http_json.get_json(cutover_config_url))
+cutover.check_migration_range(end_date, cutover_ts)
+print(f"[OK] range ends on or before the Cutover date {cutover_ts.date()}")
 
 
 def range_condition():
@@ -167,6 +175,7 @@ if mode == "load":
             f"Legacy rows outside the requested range: {len(outside)} out of window, "
             f"wrong City: {wrong_city}"
         )
+    cutover.check_rows_before(silver_rows, cutover_ts)
     print(f"[OK] read {len(legacy_rows)} Legacy rows, first local hour {min(r['obs_time'] for r in legacy_rows)}")
 
     before = gold_counts_by_source()

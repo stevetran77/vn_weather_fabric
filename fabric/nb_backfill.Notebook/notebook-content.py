@@ -29,12 +29,13 @@ get_ipython().run_line_magic(
 
 # Parameters. An empty city_names list loads all 34 Cities from the config.
 # end_date must be at least 10 days in the past (the historical API lags about 5 days).
-start_date = "2022-09-01"
-end_date = "2026-10-31"
+start_date = "2024-01-01"  # must not be before the Cutover date
+end_date = "2024-01-31"
 city_names = []
 days_per_chunk = 366
 daily_call_budget = 9000
 config_url = "https://raw.githubusercontent.com/stevetran77/vn_weather_fabric/main/config/cities.json"
+cutover_config_url = "https://raw.githubusercontent.com/stevetran77/vn_weather_fabric/main/config/cutover.json"
 
 # METADATA ********************
 
@@ -46,16 +47,18 @@ config_url = "https://raw.githubusercontent.com/stevetran77/vn_weather_fabric/ma
 # CELL ********************
 
 import logging
-from datetime import date
+from datetime import UTC, date, datetime
 
 from delta.tables import DeltaTable
 from pyspark.sql import functions as F
 
 import backfill
+import cutover
 import geocoding
 import http_json
 import open_meteo
 import provinces
+import quality
 import schemas
 import transforms
 
@@ -107,6 +110,11 @@ def write_bronze(rows, variables, dataset):
 # META }
 
 # CELL ********************
+
+# The Backfill only writes from the Cutover date: stop before touching any data.
+cutover_ts = cutover.parse_cutover(http_json.get_json(cutover_config_url))
+cutover.check_backfill_range(start_date, cutover_ts)
+print(f"[OK] start_date {start_date} is on or after the Cutover date {cutover_ts.date()}")
 
 # Resolve the selected Cities, then build and write dim_city.
 all_cities = http_json.get_json(config_url)["cities"]
@@ -175,6 +183,7 @@ def load_city(city):
     write_bronze(bronze_weather, open_meteo.WEATHER_VARIABLES, "weather")
     write_bronze(bronze_air, open_meteo.AIR_QUALITY_VARIABLES, "air_quality")
     silver_rows = transforms.build_silver_rows(bronze_weather, bronze_air)
+    cutover.check_rows_from(silver_rows, cutover_ts)
     gold_rows = transforms.build_gold_rows(silver_rows, source="archive")
     merge_delta(silver_rows, schemas.SILVER_DDL, silver_path)
     merge_delta(gold_rows, schemas.GOLD_DDL, gold_path)
@@ -217,6 +226,37 @@ summary = (
     .orderBy("city_id")
 )
 summary.show(50, truncate=False)
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+# Continuity at the Cutover date: both boundary hours exist for every City, legacy before it and
+# not legacy from it. The results go to dq_results and a FAIL stops the run.
+run_time = datetime.now(UTC)
+last_before, first_after = cutover.boundary_hours(cutover_ts)
+boundary_rows = [
+    row.asDict()
+    for row in spark.read.format("delta").load(gold_path)
+    .where(F.col("ts").isin([F.lit(last_before), F.lit(first_after)]))
+    .select("city_id", "ts", "source").collect()
+]
+# Spark returns `ts` without a time zone (the session time zone is UTC): mark it as UTC.
+for row in boundary_rows:
+    row["ts"] = row["ts"].replace(tzinfo=UTC)
+all_city_ids = [row["city_id"] for row in spark.read.format("delta").load(dim_city_path).collect()]
+results = cutover.check_continuity(boundary_rows, all_city_ids, cutover_ts, run_time)
+(spark.createDataFrame(results, schemas.DQ_RESULTS_DDL)
+    .write.format("delta").mode("append").save(f"{gold_root}/Tables/dq_results"))
+for result in results:
+    print(f"{result['status']} {result['check_name']}: {result['count']}")
+quality.raise_on_failure(results)
+print(f"[OK] Cutover continuity for {len(all_city_ids)} Cities")
 
 # METADATA ********************
 

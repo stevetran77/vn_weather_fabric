@@ -57,15 +57,15 @@ Status: agreed on 2026-11-13; in progress (the access path was proven on 2026-11
 - Access: an on-premises data gateway (`gw_legacy_onprem`) installed in a Windows 11 ARM VM (VMware Fusion Pro) on the same Mac; the gateway is Windows only, no container support, per Microsoft docs. It ran on Windows ARM and reached SQL Server through the Fusion NAT address of the Mac (the Fabric connection `cn_legacy_sqlserver` uses a read-only login `fabric_reader`). That address depends on the Fusion network and can change after a restart. Fallback if the setup breaks: export files from the database and upload them to OneLake, with no gateway
 - Path: Copy activity in a pipeline writes Parquet to `lh_bronze` `Files/` (partitioned by ingest date), then the same Silver notebook, then Gold with `source = legacy`
 - Idempotent: Delta `MERGE` on (`city_id`, `ts`), so the Migration can be re-run safely
-- Cutover date `2024-01-01` lives in `config/` (business boundary, not an environment value; hardcoding approved on 2026-11-13)
+- Cutover date `2024-01-01` lives in `config/cutover.json` (business boundary, not an environment value; hardcoding approved on 2026-11-13)
   - The Migration writes only `ts` before the Cutover date; the Backfill writes only from it
-  - A row outside its range stops the pipeline with an error
-  - Continuity check around the boundary: 2023-12-31 23:00 and 2024-01-01 00:00 exist for all 34 Cities
+  - A range or row outside its side stops the notebook with an error before any write (`src/cutover.py`); the Migration also needs `end_date` on or before the Cutover date, the Backfill `start_date` on or after it
+  - Continuity check around the boundary, run at the end of `nb_backfill`: 2023-12-31 23:00 and 2024-01-01 00:00 UTC exist for all 34 Cities, `source = legacy` before and not after; results go to `dq_results` and a FAIL stops the run
 - Reconciliation (results go to the data quality table in `lh_gold`):
   - Row counts equal per City and month
   - Sum, min and max of key columns (temperature, PM2.5) equal
   - No duplicate keys and no missing hours from 2022-09-01 to 2023-12-31
-- Current state: the first Backfill (ticket `vn-weather-pipeline/04`, 2026-11-12) loaded the API data from 2022-09-01. The Migration ticket replaces the rows of 2022-09-01 to 2023-12-31 in Silver and Gold by the Legacy rows, then the boundary guards apply
+- History: the first Backfill (ticket `vn-weather-pipeline/04`, 2026-11-12) loaded the API data from 2022-09-01. The Migration (2026-11-13) replaced the rows of 2022-09-01 to 2023-12-31 in Silver and Gold by the Legacy rows; since then the Backfill starts at the Cutover date
 - Cutover: the data is historical, so no parallel run and no incremental load (a deliberate choice, stated in the README). After the Migration is verified the database is set read-only and marked decommissioned. Rollback is re-running the Migration, not restoring the database
 
 ## Near-real-time branch
