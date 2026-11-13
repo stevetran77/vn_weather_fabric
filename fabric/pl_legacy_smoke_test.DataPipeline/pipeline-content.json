@@ -1,0 +1,82 @@
+{
+  "properties": {
+    "activities": [
+      {
+        "type": "Copy",
+        "typeProperties": {
+          "source": {
+            "type": "SqlServerSource",
+            "partitionOption": "None",
+            "queryTimeout": "02:00:00",
+            "datasetSettings": {
+              "type": "SqlServerTable",
+              "typeProperties": {
+                "schema": "dbo",
+                "table": "connectivity_test",
+                "database": "legacy_weather"
+              },
+              "schema": [],
+              "externalReferences": {
+                "connection": "15e45e92-5b6a-4906-a35f-22ff90f86202"
+              },
+              "annotations": []
+            }
+          },
+          "sink": {
+            "type": "ParquetSink",
+            "formatSettings": {
+              "type": "ParquetWriteSettings",
+              "enableVertiParquet": true
+            },
+            "storeSettings": {
+              "type": "AzureBlobStorageWriteSettings"
+            },
+            "datasetSettings": {
+              "type": "Parquet",
+              "typeProperties": {
+                "location": {
+                  "type": "LakehouseLocation",
+                  "folderPath": "legacy_smoke_test",
+                  "fileName": "legacy_smoke_test"
+                },
+                "compressionCodec": "snappy"
+              },
+              "schema": [],
+              "linkedService": {
+                "name": "lh_bronze",
+                "properties": {
+                  "type": "Lakehouse",
+                  "typeProperties": {
+                    "artifactId": "797c5f6c-5dcb-9677-4936-caeb1e76f2d3",
+                    "workspaceId": "00000000-0000-0000-0000-000000000000",
+                    "rootFolder": "Files"
+                  },
+                  "annotations": []
+                }
+              },
+              "annotations": []
+            }
+          },
+          "translator": {
+            "type": "TabularTranslator",
+            "typeConversion": true,
+            "typeConversionSettings": {
+              "allowDataTruncation": true,
+              "treatBooleanAsNumber": false
+            }
+          },
+          "enableStaging": false
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "pl_legacy_smoke_test",
+        "dependsOn": []
+      }
+    ]
+  }
+}
