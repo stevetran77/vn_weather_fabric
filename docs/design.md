@@ -43,7 +43,7 @@ Agreed on: 2026-11-12. Status: agreed after a design interview; not implemented 
   - Write with Delta `MERGE` on (`city_id`, `ts`): a `forecast` hour becomes `provisional` and then `archive` on later runs
   - Gold holds all sources (`forecast`, `provisional`, `archive`, and `legacy` for migrated rows); Silver holds finished hours only (no predictions)
   - About 136 Open-Meteo calls per run (about 1,632 per day), measured from `X-RateLimit-Cost`
-- Timestamps are stored in UTC in Bronze and Silver; Gold adds a local-time column (`Asia/Ho_Chi_Minh`)
+- Timestamps are stored in UTC in Bronze and Silver; Gold adds a local-time column (`Asia/Ho_Chi_Minh`). Exception: the Bronze copy of the Legacy source is raw and keeps the source's local time (`obs_time`); the conversion to UTC happens when building Silver (`src/legacy_mapping.py`)
 - `dim_city` maps each City to its Province by the Province code in the config (provinces.open-api.vn v2); a City name and its Province name may differ after the 2025 merger
 
 ## On-premises migration
