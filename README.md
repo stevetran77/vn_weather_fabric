@@ -72,7 +72,7 @@ The history from 2022-09-01 to 2023-12-31 reaches Gold through a simulated on-pr
 - `tests/`: pytest tests for `src/`, with mocked HTTP
 - `scripts/`: helper scripts (offline validation of Fabric item folders)
 - `config/cities.json`: the 34 cities, one per Province
-- `docs/`: design and data source notes
+- `docs/`: design, data source notes, and [what each notebook and pipeline does](docs/NOTEBOOKS.md)
 
 ## How changes reach Fabric
 

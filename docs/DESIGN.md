@@ -17,7 +17,7 @@ Agreed on: 2026-11-12. Status: agreed after a design interview; not implemented 
 ## Data
 - Main source: Open-Meteo (weather and air quality) for 34 cities, one representative City per Province of the 34-province structure (scope widened from 6 cities on 2026-11-12)
 - Dimension: provinces.open-api.vn; yearly enrichment: World Bank API (VNM)
-- Source details and risks: see `docs/data_sources.md`
+- Source details and risks: see `docs/DATA_SOURCES.md`
 - Open-Meteo license: CC BY 4.0, free tier is non-commercial only, attribution required
 - PM2.5 is CAMS model data (~45 km), not station measurements
 - The list of 34 cities lives in `config/cities.json` (approved hardcoding: it is configuration, not data). Each entry has the Province code (provinces.open-api.vn v2), the City `name`, and a `search_name` for geocoding. Names are English without diacritics because the Geocoding API returned a wrong place for `Ha Noi` with diacritics

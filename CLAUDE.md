@@ -4,7 +4,8 @@ Data Engineer portfolio project on Microsoft Fabric (Trial). Time budget: 2 week
 
 ## Docs (read before working)
 - `docs/DESIGN.md`: agreed design (architecture, CI/CD, definition of done, open items)
-- `docs/data_sources.md`: surveyed APIs, licenses, risks
+- `docs/DATA_SOURCES.md`: surveyed APIs, licenses, risks
+- `docs/NOTEBOOKS.md`: what each notebook and pipeline does
 - `GLOSSARY.md`: domain vocabulary (City, Observation, Reading, Backfill, Refresh window, Model PM2.5, Province)
 
 ## Architecture summary
