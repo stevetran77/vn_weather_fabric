@@ -89,7 +89,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'City-days above the PM2.5 threshold'"
+                  "Value": "'City-days above the PM2.5 threshold (WHO 15)'"
                 }
               }
             }
@@ -112,12 +112,12 @@
     }
   },
   "position": {
-    "x": 1280,
+    "x": 1438,
     "y": 240,
-    "width": 600,
+    "width": 440,
     "height": 140,
     "z": 0,
-    "tabOrder": 0
+    "tabOrder": 9
   },
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.13.0/schema.json"
 }

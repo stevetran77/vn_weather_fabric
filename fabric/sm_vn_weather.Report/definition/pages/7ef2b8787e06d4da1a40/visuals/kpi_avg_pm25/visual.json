@@ -97,10 +97,10 @@
   "position": {
     "x": 40,
     "y": 240,
-    "width": 600,
+    "width": 440,
     "height": 140,
     "z": 0,
-    "tabOrder": 0
+    "tabOrder": 3
   },
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.13.0/schema.json"
 }

@@ -2,9 +2,9 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
   "name": "p1_note",
   "position": {
-    "x": 460,
+    "x": 1080,
     "y": 100,
-    "width": 1000,
+    "width": 560,
     "height": 120,
     "z": 2,
     "tabOrder": 2

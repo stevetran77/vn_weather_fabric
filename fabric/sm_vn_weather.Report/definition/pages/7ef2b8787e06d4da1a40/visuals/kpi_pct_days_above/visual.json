@@ -89,7 +89,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Share of days above the PM2.5 threshold'"
+                  "Value": "'Share of days above the WHO guideline (15 ug/m3)'"
                 }
               }
             }
@@ -112,12 +112,12 @@
     }
   },
   "position": {
-    "x": 660,
+    "x": 506,
     "y": 240,
-    "width": 600,
+    "width": 440,
     "height": 140,
     "z": 0,
-    "tabOrder": 0
+    "tabOrder": 4
   },
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.13.0/schema.json"
 }

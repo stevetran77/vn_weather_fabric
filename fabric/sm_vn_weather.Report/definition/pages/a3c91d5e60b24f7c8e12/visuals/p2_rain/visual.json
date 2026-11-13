@@ -2,9 +2,9 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
   "name": "p2_rain",
   "position": {
-    "x": 960,
+    "x": 660,
     "y": 240,
-    "width": 920,
+    "width": 600,
     "height": 500,
     "z": 4,
     "tabOrder": 4
