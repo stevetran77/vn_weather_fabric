@@ -3,6 +3,7 @@ from datetime import UTC, datetime
 import pytest
 
 import legacy_mapping
+import schemas
 import transforms
 
 
@@ -84,7 +85,5 @@ def test_gold_local_time_matches_the_legacy_time():
 
 
 def test_silver_columns_match_the_silver_schema():
-    import schemas
-
     rows = legacy_mapping.legacy_to_silver_rows([legacy_row(7)])
     assert list(rows[0]) == schemas.column_names(schemas.SILVER_DDL)

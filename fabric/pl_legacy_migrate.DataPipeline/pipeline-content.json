@@ -1,5 +1,154 @@
 {
   "properties": {
-    "activities": []
+    "activities": [
+      {
+        "type": "Copy",
+        "typeProperties": {
+          "source": {
+            "type": "SqlServerSource",
+            "sqlReaderQuery": {
+              "value": "SELECT city_code, obs_time, temp_c, humidity_pct, rain_mm, wind_kmh, pm25 FROM dbo.weather_hourly WHERE city_code = @{pipeline().parameters.city_code} AND obs_time >= '@{pipeline().parameters.start_date}' AND obs_time < '@{pipeline().parameters.end_date}'",
+              "type": "Expression"
+            },
+            "partitionOption": "None",
+            "queryTimeout": "02:00:00",
+            "datasetSettings": {
+              "type": "SqlServerTable",
+              "typeProperties": {
+                "database": "legacy_weather"
+              },
+              "schema": [],
+              "externalReferences": {
+                "connection": "15e45e92-5b6a-4906-a35f-22ff90f86202"
+              },
+              "annotations": []
+            }
+          },
+          "sink": {
+            "type": "ParquetSink",
+            "formatSettings": {
+              "type": "ParquetWriteSettings",
+              "enableVertiParquet": true
+            },
+            "storeSettings": {
+              "type": "AzureBlobStorageWriteSettings"
+            },
+            "datasetSettings": {
+              "type": "Parquet",
+              "typeProperties": {
+                "location": {
+                  "type": "LakehouseLocation",
+                  "folderPath": {
+                    "value": "bronze/legacy/weather_hourly/ingest_date=@{formatDateTime(utcnow(),'yyyy-MM-dd')}/city_code=@{pipeline().parameters.city_code}",
+                    "type": "Expression"
+                  },
+                  "fileName": "weather_hourly.parquet"
+                },
+                "compressionCodec": "snappy"
+              },
+              "schema": [],
+              "linkedService": {
+                "name": "lh_bronze",
+                "properties": {
+                  "type": "Lakehouse",
+                  "typeProperties": {
+                    "artifactId": "797c5f6c-5dcb-9677-4936-caeb1e76f2d3",
+                    "workspaceId": "00000000-0000-0000-0000-000000000000",
+                    "rootFolder": "Files"
+                  },
+                  "annotations": []
+                }
+              },
+              "annotations": []
+            }
+          },
+          "translator": {
+            "type": "TabularTranslator",
+            "typeConversion": true,
+            "typeConversionSettings": {
+              "allowDataTruncation": true,
+              "treatBooleanAsNumber": false
+            }
+          },
+          "enableStaging": false
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "copy_legacy_weather",
+        "dependsOn": []
+      },
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "583d1a10-841e-4cba-8eab-a31e911139b7",
+          "workspaceId": "00000000-0000-0000-0000-000000000000",
+          "parameters": {
+            "ingest_date": {
+              "value": {
+                "value": "@formatDateTime(utcnow(),'yyyy-MM-dd')",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
+            "city_code": {
+              "value": {
+                "value": "@pipeline().parameters.city_code",
+                "type": "Expression"
+              },
+              "type": "int"
+            },
+            "start_date": {
+              "value": {
+                "value": "@pipeline().parameters.start_date",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
+            "end_date": {
+              "value": {
+                "value": "@pipeline().parameters.end_date",
+                "type": "Expression"
+              },
+              "type": "string"
+            }
+          }
+        },
+        "policy": {
+          "timeout": "0.00:30:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 60,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "run_nb_migrate_legacy",
+        "dependsOn": [
+          {
+            "activity": "copy_legacy_weather",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      }
+    ],
+    "parameters": {
+      "city_code": {
+        "type": "int",
+        "defaultValue": 1
+      },
+      "start_date": {
+        "type": "string",
+        "defaultValue": "2022-10-01"
+      },
+      "end_date": {
+        "type": "string",
+        "defaultValue": "2022-11-01"
+      }
+    }
   }
 }

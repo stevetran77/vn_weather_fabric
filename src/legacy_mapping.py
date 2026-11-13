@@ -43,9 +43,10 @@ def legacy_to_silver_rows(legacy_rows: list[dict]) -> list[dict]:
 
     A duplicate (city_id, ts) stops the load with ValueError, as the data quality rules require.
     """
-    silver_rows = [_to_silver_row(row) for row in legacy_rows]
-    keys = [(row["city_id"], row["ts"]) for row in silver_rows]
-    if len(set(keys)) != len(keys):
+    key_of = itemgetter(*KEY_COLUMNS)
+    silver_rows = sorted((_to_silver_row(row) for row in legacy_rows), key=key_of)
+    keys = {key_of(row) for row in silver_rows}
+    if len(keys) != len(silver_rows):
         raise ValueError("Duplicate (city_id, ts) keys in the Legacy rows")
     logger.info("Mapped %d Legacy rows to Silver rows", len(silver_rows))
-    return sorted(silver_rows, key=itemgetter(*KEY_COLUMNS))
+    return silver_rows
