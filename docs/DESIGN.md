@@ -3,7 +3,7 @@
 Agreed on: 2026-11-12. Status: agreed after a design interview; not implemented yet.
 
 ## Goals and scope
-- Data Engineer portfolio project, also used to prepare for the DP-700 exam
+- Data Engineer portfolio project
 - Fabric Trial (64 CU, Southeast Asia), activated 2026-11-12, expires after 60 days
 - Time budget: 2 weeks
 - Data comes from APIs (no CSV files), stored as Parquet/Delta
@@ -49,7 +49,7 @@ Agreed on: 2026-11-12. Status: agreed after a design interview; not implemented 
 ## On-premises migration
 Status: agreed on 2026-11-13; in progress (the access path was proven on 2026-11-13, see ticket `onprem-migration/01`). Time-boxed to about 3-4 working days; it is an extension and is cut first if time runs out (it must not block the definition of done).
 
-- Purpose: a portfolio story (legacy system moved to the cloud, verified) and practice for DP-700 (on-premises ingest, gateway, pipeline copy)
+- Purpose: a portfolio story (legacy system moved to the cloud, verified)
 - Legacy source: a simulated on-premises SQL Server 2022 (Developer edition) in a Docker container on the user's Mac (`legacy_source/`: `docker-compose.yml`, `init_legacy_db.sql`; passwords in a gitignored `.env`). The image is x64 only and runs under emulation on Apple Silicon; stability under a large load is not verified. The port is bound to the Mac address of the Fusion NAT network only, not to the home network. Believed free of charge (Fusion Pro personal-use terms and SQL Server Developer terms not verified in this session)
 - Why Docker and not the VM: SQL Server has no ARM64 build and its installer failed to run on Windows 11 ARM according to Microsoft Q&A threads (community answers, no official documentation); the install was not tried in the VM
 - Content: Observations from 2022-09-01 to 2023-12-31, copied once from the data already in `lh_gold` (no new API calls; the earlier plan to call ERA5 again was dropped on 2026-11-13). The tables are legacy-style: own table and column names (`city`, `weather_hourly`, `temp_c`, `humidity_pct`, `rain_mm`, `wind_kmh`, `pm25`) and local time (`Asia/Ho_Chi_Minh`) instead of UTC, so the Migration has a real mapping to do (rename columns, convert local time back to UTC)

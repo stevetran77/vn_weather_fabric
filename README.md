@@ -2,7 +2,7 @@
 
 Hourly weather and air quality (PM2.5) for one representative city in each of Vietnam's 34 provinces, loaded into Microsoft Fabric with a Bronze / Silver / Gold lakehouse design.
 
-This is a Data Engineer portfolio project, also used to prepare for the DP-700 exam. It runs on a Fabric Trial capacity.
+This is a Data Engineer portfolio project. It runs on a Fabric Trial capacity.
 
 ## Status
 
@@ -12,7 +12,7 @@ This is a Data Engineer portfolio project, also used to prepare for the DP-700 e
 - Power BI: the Direct Lake on OneLake semantic model `sm_vn_weather` (relationships, season, DAX measures) and a two-page report are written; the report has not been checked in the Fabric UI yet, and its "Insights and recommendations" text is not written
 - Planned: World Bank yearly indicators, near-real-time branch and dashboard
 
-The agreed design is in [`docs/design.md`](docs/design.md); domain terms are in [`GLOSSARY.md`](GLOSSARY.md).
+The agreed design is in [`docs/DESIGN.md`](docs/DESIGN.md); domain terms are in [`GLOSSARY.md`](GLOSSARY.md).
 
 ## Architecture
 
@@ -39,6 +39,18 @@ World Bank (planned) ─────────┘                       │
 - Days in `fact_weather_daily` are cut on local time and leave out forecast hours; a day is above the PM2.5 threshold when its mean Model PM2.5 is above the `pm2_5_threshold` notebook parameter (default 15 ug/m3, the WHO 24-hour guideline)
 - `dim_date` has a single writer, `nb_daily_aggregate`, which rebuilds it to cover the days in `fact_weather_daily`
 - The report splits the year into a dry season (November to April) and a wet season (May to October); this is a coarse national split, and the real seasons differ by region
+
+## On-premises migration
+
+The history from 2022-09-01 to 2023-12-31 reaches Gold through a simulated on-premises source, to practise moving a legacy system to the cloud and proving the result. Full details are in [`docs/DESIGN.md`](docs/DESIGN.md).
+
+- **The source is simulated**: a SQL Server 2022 container on a laptop, with legacy-style table and column names and local time instead of UTC. It was filled once from data already in `lh_gold`, not from an independent system
+- **Access path**: SQL Server -> on-premises data gateway (Windows VM on the same laptop) -> Copy activity in a pipeline -> `lh_bronze` (Parquet) -> Silver notebook (renames columns, converts local time to UTC) -> `lh_gold` with `source = legacy`
+- **Cutover date**: 2024-01-01 (`config/cutover.json`). The Migration writes only rows before it and the Backfill only rows from it; a row on the wrong side stops the notebook with an error
+- **Boundary check**: after each Backfill, 2023-12-31 23:00 and 2024-01-01 00:00 UTC must exist for all 34 Cities, with `source = legacy` before the boundary and not after. Results go to `dq_results`
+- **No parallel run and no incremental load**: the data is historical and never changes, so there is nothing to compare over time and nothing new to load. This is a deliberate choice
+- **Rollback** is re-running the Migration (a Delta `MERGE` on `city_id, ts`, so it is safe to repeat), not restoring the database
+- **Limit of the reconciliation**: the source was filled from Gold, so the checks prove the access path and the mapping, not that the data is correct against an independent source
 
 ## Data sources and attribution
 
@@ -91,4 +103,4 @@ World Bank (planned) ─────────┘                       │
 ### Why is deployment to Fabric not automated?
 
 - An automated deployment with a service principal was tested: the login worked, but the Fabric Git API returned `GitCredentialsNotConfigured`. A service principal needs its own GitHub credential, which means a long-lived token
-- For a one-person project that was judged not worth it, so "Update all" is a manual step. Details are in [`docs/design.md`](docs/design.md)
+- For a one-person project that was judged not worth it, so "Update all" is a manual step. Details are in [`docs/DESIGN.md`](docs/DESIGN.md)

@@ -1,9 +1,9 @@
 # vn_weather_fabric
 
-Data Engineer portfolio project on Microsoft Fabric (Trial), also used to prepare for the DP-700 exam. Time budget: 2 weeks.
+Data Engineer portfolio project on Microsoft Fabric (Trial). Time budget: 2 weeks.
 
 ## Docs (read before working)
-- `docs/design.md`: agreed design (architecture, CI/CD, definition of done, open items)
+- `docs/DESIGN.md`: agreed design (architecture, CI/CD, definition of done, open items)
 - `docs/data_sources.md`: surveyed APIs, licenses, risks
 - `GLOSSARY.md`: domain vocabulary (City, Observation, Reading, Backfill, Refresh window, Model PM2.5, Province)
 
@@ -13,7 +13,7 @@ Data Engineer portfolio project on Microsoft Fabric (Trial), also used to prepar
 - Near-real-time: notebook polls every 2 hours -> Eventstream -> Eventhouse (micro-batch, not a true stream)
 - A single workspace `de_vn_prod`, connected to GitHub (`main`, Git folder `fabric/`); no dev/test environment
 - CI: GitHub Actions on a single `main` branch; every push runs ruff, pytest, gitleaks, and `scripts/validate_fabric_items.py`
-- CD is manual: run "Update all" in Fabric Source control after CI is green (service principal automation was tried and dropped; see `docs/design.md`)
+- CD is manual: run "Update all" in Fabric Source control after CI is green (service principal automation was tried and dropped; see `docs/DESIGN.md`)
 - `fabric-cicd` is deliberately not used
 
 ## Repo layout
@@ -47,7 +47,7 @@ Data Engineer portfolio project on Microsoft Fabric (Trial), also used to prepar
 - Use English city names without diacritics for geocoding (`Hanoi`, not `Ha Noi` with diacritics)
 
 ## Status
-- Phase: design done, workspace connected to Git, CI in place. Ticket 01 (34-City config and geocoding, `src/geocoding.py`) done; next is ticket 02 (lakehouses, done by the user in the Fabric UI), then ticket 03. See "Open items" in `docs/design.md`
+- Phase: design done, workspace connected to Git, CI in place. Ticket 01 (34-City config and geocoding, `src/geocoding.py`) done; next is ticket 02 (lakehouses, done by the user in the Fabric UI), then ticket 03. See "Open items" in `docs/DESIGN.md`
 
 ## Agent skills
 
