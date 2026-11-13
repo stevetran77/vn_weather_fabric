@@ -50,6 +50,28 @@ table fact_weather_daily
 		formatString: dd mmm yyyy hh:mm
 		lineageTag: 93fe6f9b-8b3c-45ac-91ec-323e4f6e0d7d
 
+	/// Vietnam limit for the 24-hour mean of PM2.5 (ug/m3): 45, from Table 1 of QCVN 05:2023/BTNMT (applies from 1 Jan 2026; the limit was 50 before). The value is fixed here on purpose, so there is one place to change it, and it is applied to every date in the data, including those before 2026. The regulation is in ug/Nm3, the model in ug/m3.
+	measure 'VN PM2.5 Threshold 24h' = 45
+		formatString: 0
+		displayFolder: Vietnam threshold
+		lineageTag: 5b25c2af-214e-4ec3-856d-9cc7832b5550
+
+	/// Number of city-days (one City on one local day) whose mean Model PM2.5 is above the Vietnam 24-hour limit in [VN PM2.5 Threshold 24h]. Shows 0, not blank, when no day is above it. Model data (CAMS, about 45 km), not a station measurement.
+	measure 'City-Days Above VN Threshold' =
+			VAR thr = [VN PM2.5 Threshold 24h]
+			RETURN
+				CALCULATE ( COUNTROWS ( fact_weather_daily ), KEEPFILTERS ( fact_weather_daily[avg_pm2_5] > thr ) ) + 0
+		formatString: #,0
+		displayFolder: Vietnam threshold
+		lineageTag: 277f31f7-db57-4ce5-82de-a9eea89dc009
+
+	/// Share of city-days with a PM2.5 value that are above the Vietnam 24-hour limit. Compare with Pct Days Above Threshold, which uses the notebook threshold (default 15, the WHO 24-hour guideline).
+	measure 'Pct Days Above VN Threshold' =
+			DIVIDE ( [City-Days Above VN Threshold], [Days With PM2.5] )
+		formatString: 0.0%
+		displayFolder: Vietnam threshold
+		lineageTag: cd553226-9e1c-4aec-a52e-96d0bde86f4f
+
 	column city_id
 		isHidden
 		dataType: int64
