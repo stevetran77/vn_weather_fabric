@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Notebook",
+    "displayName": "nb_migrate_legacy"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "911139b7-a31e-8eab-4cba-841e583d1a10"
+  }
+}
