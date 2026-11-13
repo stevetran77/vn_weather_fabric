@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "DataPipeline",
+    "displayName": "pl_legacy_delete_range"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "fd24f884-8c5f-8217-4eb4-5d3ef90216af"
+  }
+}

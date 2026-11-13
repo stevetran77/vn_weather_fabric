@@ -1,0 +1,63 @@
+{
+  "properties": {
+    "activities": [
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "911139b7-a31e-8eab-4cba-841e583d1a10",
+          "workspaceId": "00000000-0000-0000-0000-000000000000",
+          "parameters": {
+            "mode": {
+              "value": "delete",
+              "type": "string"
+            },
+            "city_code": {
+              "value": {
+                "value": "@pipeline().parameters.city_code",
+                "type": "Expression"
+              },
+              "type": "int"
+            },
+            "start_date": {
+              "value": {
+                "value": "@pipeline().parameters.start_date",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
+            "end_date": {
+              "value": {
+                "value": "@pipeline().parameters.end_date",
+                "type": "Expression"
+              },
+              "type": "string"
+            }
+          }
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "run_nb_delete_range",
+        "dependsOn": []
+      }
+    ],
+    "parameters": {
+      "city_code": {
+        "type": "int",
+        "defaultValue": 0
+      },
+      "start_date": {
+        "type": "string",
+        "defaultValue": "2022-09-01"
+      },
+      "end_date": {
+        "type": "string",
+        "defaultValue": "2024-01-01"
+      }
+    }
+  }
+}
