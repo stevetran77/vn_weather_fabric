@@ -74,6 +74,9 @@ gold_path = f"{gold_root}/Tables/fact_weather_hourly"
 dim_city_path = f"{gold_root}/Tables/dim_city"
 dq_results_path = f"{gold_root}/Tables/dq_results"
 
+print(f"[INFO] city_code={city_code}, range={start_date} to {end_date}, "
+      f"ingest_date={run_ingest_date}")
+
 window_start = datetime.fromisoformat(start_date).replace(tzinfo=UTC)
 window_end = datetime.fromisoformat(end_date).replace(tzinfo=UTC)
 

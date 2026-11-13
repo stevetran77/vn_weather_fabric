@@ -74,6 +74,9 @@ bronze_path = (
 silver_path = f"{lakehouse_root('lh_silver')}/Tables/observation"
 gold_path = f"{lakehouse_root('lh_gold')}/Tables/fact_weather_hourly"
 
+print(f"[INFO] mode={mode}, city_code={city_code}, range={start_date} to {end_date}, "
+      f"ingest_date={run_ingest_date}")
+
 # The UTC window of the range.
 window_start = datetime.fromisoformat(start_date).replace(tzinfo=UTC)
 window_end = datetime.fromisoformat(end_date).replace(tzinfo=UTC)
