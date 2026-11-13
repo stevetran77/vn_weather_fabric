@@ -7,7 +7,7 @@
           "source": {
             "type": "SqlServerSource",
             "sqlReaderQuery": {
-              "value": "SELECT city_code, obs_time, temp_c, humidity_pct, rain_mm, wind_kmh, pm25 FROM dbo.weather_hourly WHERE city_code = @{pipeline().parameters.city_code} AND obs_time >= '@{pipeline().parameters.start_date}' AND obs_time < '@{pipeline().parameters.end_date}'",
+              "value": "SELECT city_code, obs_time, temp_c, humidity_pct, rain_mm, wind_kmh, pm25 FROM dbo.weather_hourly WHERE (@{pipeline().parameters.city_code} = 0 OR city_code = @{pipeline().parameters.city_code}) AND obs_time >= DATEADD(hour, 7, '@{pipeline().parameters.start_date}') AND obs_time < DATEADD(hour, 7, '@{pipeline().parameters.end_date}')",
               "type": "Expression"
             },
             "partitionOption": "None",
@@ -83,11 +83,99 @@
         "dependsOn": []
       },
       {
+        "type": "Copy",
+        "typeProperties": {
+          "source": {
+            "type": "SqlServerSource",
+            "sqlReaderQuery": {
+              "value": "SELECT city_code, CONVERT(char(7), obs_time, 126) AS year_month, COUNT(*) AS row_count, SUM(temp_c) AS temp_c_sum, MIN(temp_c) AS temp_c_min, MAX(temp_c) AS temp_c_max, SUM(humidity_pct) AS humidity_pct_sum, MIN(humidity_pct) AS humidity_pct_min, MAX(humidity_pct) AS humidity_pct_max, SUM(rain_mm) AS rain_mm_sum, MIN(rain_mm) AS rain_mm_min, MAX(rain_mm) AS rain_mm_max, SUM(wind_kmh) AS wind_kmh_sum, MIN(wind_kmh) AS wind_kmh_min, MAX(wind_kmh) AS wind_kmh_max, SUM(pm25) AS pm25_sum, MIN(pm25) AS pm25_min, MAX(pm25) AS pm25_max FROM dbo.weather_hourly WHERE (@{pipeline().parameters.city_code} = 0 OR city_code = @{pipeline().parameters.city_code}) AND obs_time >= DATEADD(hour, 7, '@{pipeline().parameters.start_date}') AND obs_time < DATEADD(hour, 7, '@{pipeline().parameters.end_date}') GROUP BY city_code, CONVERT(char(7), obs_time, 126)",
+              "type": "Expression"
+            },
+            "partitionOption": "None",
+            "queryTimeout": "02:00:00",
+            "datasetSettings": {
+              "type": "SqlServerTable",
+              "typeProperties": {
+                "database": "legacy_weather"
+              },
+              "schema": [],
+              "externalReferences": {
+                "connection": "15e45e92-5b6a-4906-a35f-22ff90f86202"
+              },
+              "annotations": []
+            }
+          },
+          "sink": {
+            "type": "ParquetSink",
+            "formatSettings": {
+              "type": "ParquetWriteSettings",
+              "enableVertiParquet": true
+            },
+            "storeSettings": {
+              "type": "AzureBlobStorageWriteSettings"
+            },
+            "datasetSettings": {
+              "type": "Parquet",
+              "typeProperties": {
+                "location": {
+                  "type": "LakehouseLocation",
+                  "folderPath": {
+                    "value": "bronze/legacy/reconciliation/ingest_date=@{formatDateTime(utcnow(),'yyyy-MM-dd')}/city_code=@{pipeline().parameters.city_code}",
+                    "type": "Expression"
+                  },
+                  "fileName": "aggregates.parquet"
+                },
+                "compressionCodec": "snappy"
+              },
+              "schema": [],
+              "linkedService": {
+                "name": "lh_bronze",
+                "properties": {
+                  "type": "Lakehouse",
+                  "typeProperties": {
+                    "artifactId": "797c5f6c-5dcb-9677-4936-caeb1e76f2d3",
+                    "workspaceId": "00000000-0000-0000-0000-000000000000",
+                    "rootFolder": "Files"
+                  },
+                  "annotations": []
+                }
+              },
+              "annotations": []
+            }
+          },
+          "translator": {
+            "type": "TabularTranslator",
+            "typeConversion": true,
+            "typeConversionSettings": {
+              "allowDataTruncation": true,
+              "treatBooleanAsNumber": false
+            }
+          },
+          "enableStaging": false
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "copy_legacy_aggregates",
+        "dependsOn": []
+      },
+      {
         "type": "TridentNotebook",
         "typeProperties": {
           "notebookId": "911139b7-a31e-8eab-4cba-841e583d1a10",
           "workspaceId": "00000000-0000-0000-0000-000000000000",
           "parameters": {
+            "mode": {
+              "value": {
+                "value": "load",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
             "ingest_date": {
               "value": {
                 "value": "@formatDateTime(utcnow(),'yyyy-MM-dd')",
@@ -134,20 +222,79 @@
             ]
           }
         ]
+      },
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "37d75b66-19e7-8147-41ad-d7f4ec57feeb",
+          "workspaceId": "00000000-0000-0000-0000-000000000000",
+          "parameters": {
+            "ingest_date": {
+              "value": {
+                "value": "@formatDateTime(utcnow(),'yyyy-MM-dd')",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
+            "city_code": {
+              "value": {
+                "value": "@pipeline().parameters.city_code",
+                "type": "Expression"
+              },
+              "type": "int"
+            },
+            "start_date": {
+              "value": {
+                "value": "@pipeline().parameters.start_date",
+                "type": "Expression"
+              },
+              "type": "string"
+            },
+            "end_date": {
+              "value": {
+                "value": "@pipeline().parameters.end_date",
+                "type": "Expression"
+              },
+              "type": "string"
+            }
+          }
+        },
+        "policy": {
+          "timeout": "0.00:30:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 60,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "run_nb_reconcile_legacy",
+        "dependsOn": [
+          {
+            "activity": "run_nb_migrate_legacy",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          },
+          {
+            "activity": "copy_legacy_aggregates",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
       }
     ],
     "parameters": {
       "city_code": {
         "type": "int",
-        "defaultValue": 1
+        "defaultValue": 0
       },
       "start_date": {
         "type": "string",
-        "defaultValue": "2022-10-01"
+        "defaultValue": "2022-09-01"
       },
       "end_date": {
         "type": "string",
-        "defaultValue": "2022-11-01"
+        "defaultValue": "2024-01-01"
       }
     }
   }
