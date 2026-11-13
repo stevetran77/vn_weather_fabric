@@ -7,10 +7,10 @@
       "jobType": "Execute",
       "configuration": {
         "type": "Cron",
-        "startDateTime": "2026-11-12T18:23:00",
-        "endDateTime": "2026-11-19T23:59:00",
+        "startDateTime": "2026-11-13T00:22:00",
+        "endDateTime": "9999-12-31T23:59:59.9999999",
         "localTimeZoneId": "SE Asia Standard Time",
-        "interval": 90
+        "interval": 180
       }
     }
   ]
