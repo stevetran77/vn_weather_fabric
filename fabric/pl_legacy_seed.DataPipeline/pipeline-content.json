@@ -1,0 +1,328 @@
+{
+  "properties": {
+    "activities": [
+      {
+        "type": "Script",
+        "typeProperties": {
+          "database": "legacy_weather",
+          "scripts": [
+            {
+              "text": {
+                "value": "DELETE FROM dbo.weather_hourly;\nDELETE FROM dbo.city;",
+                "type": "Expression"
+              },
+              "type": "NonQuery"
+            }
+          ],
+          "scriptBlockExecutionTimeout": "02:00:00"
+        },
+        "externalReferences": {
+          "connection": "3eecf882-4a68-4ad0-a781-437eeaa6b03d"
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "clear_legacy_tables",
+        "dependsOn": []
+      },
+      {
+        "type": "Copy",
+        "typeProperties": {
+          "source": {
+            "type": "LakehouseTableSource",
+            "datasetSettings": {
+              "type": "LakehouseTable",
+              "typeProperties": {
+                "table": "dim_city"
+              },
+              "schema": [],
+              "linkedService": {
+                "name": "lh_gold",
+                "properties": {
+                  "type": "Lakehouse",
+                  "typeProperties": {
+                    "artifactId": "474bf8fc-dd18-bdd8-4c3e-cf8dbdf41314",
+                    "workspaceId": "00000000-0000-0000-0000-000000000000",
+                    "rootFolder": "Tables"
+                  },
+                  "annotations": []
+                }
+              },
+              "annotations": []
+            }
+          },
+          "sink": {
+            "type": "SqlServerSink",
+            "sqlWriterUseTableLock": false,
+            "writeBehavior": "insert",
+            "datasetSettings": {
+              "type": "SqlServerTable",
+              "typeProperties": {
+                "schema": "dbo",
+                "table": "city",
+                "database": "legacy_weather"
+              },
+              "schema": [],
+              "externalReferences": {
+                "connection": "3eecf882-4a68-4ad0-a781-437eeaa6b03d"
+              },
+              "annotations": []
+            }
+          },
+          "translator": {
+            "type": "TabularTranslator",
+            "mappings": [
+              {
+                "source": {
+                  "name": "city_id",
+                  "type": "Int64",
+                  "physicalType": "long"
+                },
+                "sink": {
+                  "name": "city_code",
+                  "physicalType": "int"
+                }
+              },
+              {
+                "source": {
+                  "name": "city_name",
+                  "type": "String",
+                  "physicalType": "string"
+                },
+                "sink": {
+                  "name": "city_name",
+                  "physicalType": "nvarchar",
+                  "length": "100"
+                }
+              },
+              {
+                "source": {
+                  "name": "latitude",
+                  "type": "Double",
+                  "physicalType": "double"
+                },
+                "sink": {
+                  "name": "lat",
+                  "physicalType": "float"
+                }
+              },
+              {
+                "source": {
+                  "name": "longitude",
+                  "type": "Double",
+                  "physicalType": "double"
+                },
+                "sink": {
+                  "name": "lon",
+                  "physicalType": "float"
+                }
+              },
+              {
+                "source": {
+                  "name": "province_code",
+                  "type": "Int64",
+                  "physicalType": "long"
+                },
+                "sink": {
+                  "name": "province_code",
+                  "physicalType": "int"
+                }
+              },
+              {
+                "source": {
+                  "name": "province_name",
+                  "type": "String",
+                  "physicalType": "string"
+                },
+                "sink": {
+                  "name": "province_name",
+                  "physicalType": "nvarchar",
+                  "length": "100"
+                }
+              }
+            ],
+            "typeConversion": true,
+            "typeConversionSettings": {
+              "allowDataTruncation": true,
+              "treatBooleanAsNumber": false
+            }
+          },
+          "enableStaging": false
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "copy_city_data",
+        "dependsOn": [
+          {
+            "activity": "clear_legacy_tables",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      },
+      {
+        "type": "Copy",
+        "typeProperties": {
+          "source": {
+            "type": "LakehouseTableSource",
+            "sqlReaderQuery": "SELECT * FROM fact_weather_hourly WHERE ts < '2024-01-01'",
+            "partitionOption": "None",
+            "datasetSettings": {
+              "type": "LakehouseTable",
+              "schema": [],
+              "connectionSettings": {
+                "name": "lh_gold",
+                "properties": {
+                  "type": "Lakehouse",
+                  "typeProperties": {
+                    "artifactId": "474bf8fc-dd18-bdd8-4c3e-cf8dbdf41314",
+                    "workspaceId": "00000000-0000-0000-0000-000000000000",
+                    "rootFolder": "Tables"
+                  },
+                  "externalReferences": {
+                    "connection": "b4775400-579c-4c5c-8c93-e1b0ec97b24e"
+                  },
+                  "annotations": []
+                }
+              },
+              "annotations": []
+            }
+          },
+          "sink": {
+            "type": "SqlServerSink",
+            "sqlWriterUseTableLock": false,
+            "writeBehavior": "insert",
+            "datasetSettings": {
+              "type": "SqlServerTable",
+              "typeProperties": {
+                "schema": "dbo",
+                "table": "weather_hourly",
+                "database": "legacy_weather"
+              },
+              "schema": [],
+              "externalReferences": {
+                "connection": "3eecf882-4a68-4ad0-a781-437eeaa6b03d"
+              },
+              "annotations": []
+            }
+          },
+          "translator": {
+            "type": "TabularTranslator",
+            "mappings": [
+              {
+                "source": {
+                  "name": "city_id",
+                  "type": "Int64",
+                  "physicalType": "bigint"
+                },
+                "sink": {
+                  "name": "city_code",
+                  "physicalType": "int"
+                }
+              },
+              {
+                "source": {
+                  "name": "ts_local",
+                  "type": "DateTime",
+                  "physicalType": "datetime2"
+                },
+                "sink": {
+                  "name": "obs_time",
+                  "physicalType": "datetime2",
+                  "precision": 0
+                }
+              },
+              {
+                "source": {
+                  "name": "temperature_2m",
+                  "type": "Single",
+                  "physicalType": "float"
+                },
+                "sink": {
+                  "name": "temp_c",
+                  "physicalType": "float"
+                }
+              },
+              {
+                "source": {
+                  "name": "relative_humidity_2m",
+                  "type": "Single",
+                  "physicalType": "float"
+                },
+                "sink": {
+                  "name": "humidity_pct",
+                  "physicalType": "float"
+                }
+              },
+              {
+                "source": {
+                  "name": "precipitation",
+                  "type": "Single",
+                  "physicalType": "float"
+                },
+                "sink": {
+                  "name": "rain_mm",
+                  "physicalType": "float"
+                }
+              },
+              {
+                "source": {
+                  "name": "wind_speed_10m",
+                  "type": "Single",
+                  "physicalType": "float"
+                },
+                "sink": {
+                  "name": "wind_kmh",
+                  "physicalType": "float"
+                }
+              },
+              {
+                "source": {
+                  "name": "pm2_5",
+                  "type": "Single",
+                  "physicalType": "float"
+                },
+                "sink": {
+                  "name": "pm25",
+                  "physicalType": "float"
+                }
+              }
+            ],
+            "typeConversion": true,
+            "typeConversionSettings": {
+              "allowDataTruncation": true,
+              "treatBooleanAsNumber": false
+            }
+          },
+          "enableStaging": false
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "copy_weather_hourly_data",
+        "dependsOn": [
+          {
+            "activity": "copy_city_data",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
