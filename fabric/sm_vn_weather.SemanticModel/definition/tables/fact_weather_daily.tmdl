@@ -72,6 +72,114 @@ table fact_weather_daily
 		displayFolder: Vietnam threshold
 		lineageTag: cd553226-9e1c-4aec-a52e-96d0bde86f4f
 
+	/// Reference year for the year-over-year cards: the year selected in the Year slicer, otherwise the latest year in the data.
+	measure 'Ref Year' =
+			IF (
+			    HASONEVALUE ( dim_date[year] ),
+			    SELECTEDVALUE ( dim_date[year] ),
+			    CALCULATE ( MAX ( dim_date[year] ), ALL ( dim_date ) )
+			)
+		formatString: 0
+		displayFolder: Year over year
+		lineageTag: f8afa105-7562-4222-9a14-9d6abc65bb6e
+
+	/// The year before [Ref Year].
+	measure 'Prev Year' =
+			[Ref Year] - 1
+		formatString: 0
+		displayFolder: Year over year
+		lineageTag: e3afd06f-fa61-4d84-9123-452c8583d4cb
+
+	/// Avg PM2.5 in the reference year minus Avg PM2.5 in the previous year, over the same months of the year (so a partial current year is compared like for like).
+	measure 'PM2.5 Change vs Prev Year' =
+			VAR ref = [Ref Year]
+			VAR ms = CALCULATETABLE ( VALUES ( dim_date[month] ), dim_date[year] = ref )
+			VAR cur = CALCULATE ( [Avg PM2.5], dim_date[year] = ref )
+			VAR prv = CALCULATE ( [Avg PM2.5], dim_date[year] = ref - 1, KEEPFILTERS ( ms ) )
+			RETURN
+			    IF ( ISBLANK ( cur ) || ISBLANK ( prv ), BLANK (), ( cur - prv ) )
+		formatString: +0.0;-0.0;0.0
+		displayFolder: Year over year
+		lineageTag: db03dd14-3119-4a3f-bdc9-554ddf491249
+
+	/// Change in the share of days above the WHO guideline, in percentage points, reference year vs previous year over the same months.
+	measure 'Pct Above Change vs Prev Year (pp)' =
+			VAR ref = [Ref Year]
+			VAR ms = CALCULATETABLE ( VALUES ( dim_date[month] ), dim_date[year] = ref )
+			VAR cur = CALCULATE ( [Pct Days Above Threshold], dim_date[year] = ref )
+			VAR prv = CALCULATE ( [Pct Days Above Threshold], dim_date[year] = ref - 1, KEEPFILTERS ( ms ) )
+			RETURN
+			    IF ( ISBLANK ( cur ) || ISBLANK ( prv ), BLANK (), ( cur - prv ) * 100 )
+		formatString: +0.0 "pp";-0.0 "pp";0.0 "pp"
+		displayFolder: Year over year
+		lineageTag: d2c6b6fc-f040-451d-a295-71254c542cd7
+
+	/// Change in mean daily rainfall (mm per day), reference year vs previous year over the same months.
+	measure 'Rainfall Change vs Prev Year' =
+			VAR ref = [Ref Year]
+			VAR ms = CALCULATETABLE ( VALUES ( dim_date[month] ), dim_date[year] = ref )
+			VAR cur = CALCULATE ( [Avg Daily Rainfall], dim_date[year] = ref )
+			VAR prv = CALCULATE ( [Avg Daily Rainfall], dim_date[year] = ref - 1, KEEPFILTERS ( ms ) )
+			RETURN
+			    IF ( ISBLANK ( cur ) || ISBLANK ( prv ), BLANK (), ( cur - prv ) )
+		formatString: +0.0;-0.0;0.0
+		displayFolder: Year over year
+		lineageTag: 4db148ae-e2b6-4d6c-b2d9-eff0a7599c62
+
+	/// Text for the Avg PM2.5 card: arrow, change in ug/m3 and the year compared with.
+	measure 'PM2.5 Change Text' =
+			VAR d = [PM2.5 Change vs Prev Year]
+			RETURN
+			    IF (
+			        ISBLANK ( d ),
+			        "no previous year",
+			        IF ( d > 0, "UP ", IF ( d < 0, "DOWN ", "" ) ) & FORMAT ( d, "+0.0;-0.0;0.0" ) & " ug/m3 vs " & [Prev Year]
+			    )
+		displayFolder: Year over year
+		lineageTag: f52d0356-7f57-4773-b366-cda7fa6eb35f
+
+	/// Font colour for the PM2.5 change text: red when PM2.5 rose, green when it fell (lower is better), grey otherwise.
+	measure 'PM2.5 Change Color' =
+			IF ( [PM2.5 Change vs Prev Year] > 0, "#C0392B", IF ( [PM2.5 Change vs Prev Year] < 0, "#2E7D32", "#6B6B6B" ) )
+		displayFolder: Year over year
+		lineageTag: 2cdf4d66-d54f-427d-a765-0d6fb2a210db
+
+	/// Pearson correlation between mean daily rainfall and Avg PM2.5, one point per City and month, for the current filters. A pattern to investigate, not a cause.
+	measure 'r Rainfall vs PM2.5 (City-Months)' =
+			VAR t =
+			    FILTER (
+			        ADDCOLUMNS ( SUMMARIZE ( fact_weather_daily, dim_city[city_name], dim_date[year], dim_date[month] ), "@x", [Avg Daily Rainfall], "@y", [Avg PM2.5] ),
+			        NOT ISBLANK ( [@x] ) && NOT ISBLANK ( [@y] )
+			    )
+			VAR mx = AVERAGEX ( t, [@x] )
+			VAR my = AVERAGEX ( t, [@y] )
+			VAR sxy = SUMX ( t, ( [@x] - mx ) * ( [@y] - my ) )
+			VAR sxx = SUMX ( t, ( [@x] - mx ) ^ 2 )
+			VAR syy = SUMX ( t, ( [@y] - my ) ^ 2 )
+			RETURN
+			    IF ( COUNTROWS ( t ) < 3, BLANK (), DIVIDE ( sxy, SQRT ( sxx * syy ) ) )
+		formatString: 0.00
+		displayFolder: Year over year
+		lineageTag: 0ccfedb7-b283-4f01-bd33-0efed68b6673
+
+	/// Pearson correlation between mean daily rainfall and Avg PM2.5, one point per City, for the current filters.
+	measure 'r Rainfall vs PM2.5 (Across Cities)' =
+			VAR t =
+			    FILTER (
+			        ADDCOLUMNS ( VALUES ( dim_city[city_name] ), "@x", [Avg Daily Rainfall], "@y", [Avg PM2.5] ),
+			        NOT ISBLANK ( [@x] ) && NOT ISBLANK ( [@y] )
+			    )
+			VAR mx = AVERAGEX ( t, [@x] )
+			VAR my = AVERAGEX ( t, [@y] )
+			VAR sxy = SUMX ( t, ( [@x] - mx ) * ( [@y] - my ) )
+			VAR sxx = SUMX ( t, ( [@x] - mx ) ^ 2 )
+			VAR syy = SUMX ( t, ( [@y] - my ) ^ 2 )
+			RETURN
+			    IF ( COUNTROWS ( t ) < 3, BLANK (), DIVIDE ( sxy, SQRT ( sxx * syy ) ) )
+		formatString: 0.00
+		displayFolder: Year over year
+		lineageTag: 568a69fb-a8e4-43d6-826b-6c0371623a3d
+
 	column city_id
 		isHidden
 		dataType: int64
