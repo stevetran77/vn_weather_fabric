@@ -21,7 +21,7 @@ Guards: `nb_backfill` and `nb_migrate_legacy` stop if a row is on the wrong side
 
 | Pipeline | Runs | Purpose |
 |---|---|---|
-| `pl_daily_refresh` | `nb_daily_refresh`, then `nb_daily_aggregate` | Daily load (schedule is set in Fabric, not verified) |
+| `pl_daily_refresh` | `nb_daily_refresh`, then `nb_daily_aggregate` | Refresh every 2 hours per ticket 05 and `DESIGN.md`; the schedule is set in Fabric and was not verified |
 | `pl_legacy_seed` | Clear tables, copy cities, copy hours before 2024-01-01 | Fills the Legacy source once |
 | `pl_legacy_smoke_test` | One Copy activity | Checks the gateway connection |
 | `pl_legacy_delete_range` | A notebook with `mode`, `city_code`, `start_date`, `end_date` | Empties a range before a load (notebook not verified) |
