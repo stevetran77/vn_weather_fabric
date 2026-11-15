@@ -1,9 +1,9 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.15.0/schema.json",
   "name": "d2993709d08e120cb198",
   "position": {
-    "x": 972,
-    "y": 198,
+    "x": 1419.1230551626591,
+    "y": 195.53041018387552,
     "z": 8012,
     "height": 168,
     "width": 422,
@@ -68,6 +68,19 @@
               "expr": {
                 "Literal": {
                   "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "compatibility": [
+        {
+          "properties": {
+            "legacyRendering": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
                 }
               }
             }

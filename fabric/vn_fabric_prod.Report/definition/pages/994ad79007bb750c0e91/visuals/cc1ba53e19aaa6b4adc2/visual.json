@@ -1,12 +1,12 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.15.0/schema.json",
   "name": "cc1ba53e19aaa6b4adc2",
   "position": {
-    "x": 1328,
-    "y": 88,
+    "x": 1206.7892503536068,
+    "y": 100.82036775106081,
     "z": 8011,
-    "height": 104,
-    "width": 288,
+    "height": 126.78925035360677,
+    "width": 322.31966053748232,
     "tabOrder": 8011
   },
   "visual": {
@@ -73,6 +73,19 @@
             }
           }
         }
+      ],
+      "compatibility": [
+        {
+          "properties": {
+            "legacyRendering": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
       ]
     },
     "visualContainerObjects": {
@@ -91,5 +104,23 @@
       ]
     },
     "drillFilterOtherVisuals": true
+  },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "89774a7ebb0dd9a1070d",
+        "field": {
+          "Measure": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "fact_weather_daily"
+              }
+            },
+            "Property": "Refresh Badge"
+          }
+        },
+        "type": "Advanced"
+      }
+    ]
   }
 }

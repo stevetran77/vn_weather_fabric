@@ -1,12 +1,12 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.15.0/schema.json",
   "name": "fc0b521441a21b996040",
   "position": {
-    "x": 80,
-    "y": 88,
+    "x": 80.961810466760951,
+    "y": 100.82036775106081,
     "z": 8000,
-    "height": 104,
-    "width": 520,
+    "height": 105.4031117397454,
+    "width": 519.37765205091932,
     "tabOrder": 8000
   },
   "visual": {
@@ -237,7 +237,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "'10'"
+                  "Value": "13D"
                 }
               }
             },
@@ -252,6 +252,13 @@
               "expr": {
                 "Literal": {
                   "Value": "'Segoe UI'"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Year'"
                 }
               }
             }
