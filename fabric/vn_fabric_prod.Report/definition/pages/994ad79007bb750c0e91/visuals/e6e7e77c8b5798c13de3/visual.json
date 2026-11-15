@@ -1,0 +1,56 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
+  "name": "e6e7e77c8b5798c13de3",
+  "position": {
+    "x": 80,
+    "y": 208,
+    "z": 8002,
+    "height": 150,
+    "width": 416,
+    "tabOrder": 8002
+  },
+  "visual": {
+    "visualType": "cardVisual",
+    "query": {
+      "queryState": {
+        "Data": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_weather_daily"
+                    }
+                  },
+                  "Property": "Avg PM2.5"
+                }
+              },
+              "queryRef": "fact_weather_daily.Avg PM2.5",
+              "nativeQueryRef": "Avg PM2.5"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Measure": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "fact_weather_daily"
+                  }
+                },
+                "Property": "Avg PM2.5"
+              }
+            },
+            "direction": "Descending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "drillFilterOtherVisuals": true
+  }
+}
