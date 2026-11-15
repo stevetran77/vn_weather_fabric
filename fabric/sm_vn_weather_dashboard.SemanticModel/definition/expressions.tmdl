@@ -1,0 +1,11 @@
+expression 'DirectQuery to AS - sm_vn_weather' =
+		let
+		    Source = AnalysisServices.Database("powerbi://api.powerbi.com/v1.0/57671ada-5090-41cb-8e77-2fae02b35952/de_vn_prod", "sm_vn_weather"),
+		    Cubes = Table.Combine(Source[Data]),
+		    Cube = Cubes{[Id="Model", Kind="Cube"]}[Data]
+		in
+		    Cube
+	lineageTag: 75a0acd4-7fd0-4e2a-9385-df769afb978e
+
+	annotation PBI_IncludeFutureArtifacts = True
+

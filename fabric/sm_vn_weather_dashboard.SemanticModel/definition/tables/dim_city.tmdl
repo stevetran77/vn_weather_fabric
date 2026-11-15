@@ -1,0 +1,76 @@
+table dim_city
+	lineageTag: 4f205f20-fd89-4c0a-bf09-8499a06dbb53
+	sourceLineageTag: 5797afea-6731-49d0-9f94-30a1b32c5d8c
+
+	column city_id
+		dataType: int64
+		isHidden
+		isNullable: false
+		formatString: 0
+		lineageTag: e1d138da-149b-4889-be5c-abd673e973f1
+		sourceLineageTag: 0854ecc4-1a02-4764-b7f0-b66a8eb9be5e
+		dataCategory: Uncategorized
+		summarizeBy: sum
+		sourceColumn: city_id
+
+		annotation SummarizationSetBy = User
+
+	column city_name
+		dataType: string
+		lineageTag: 3233faa1-982c-48d5-ac2f-7aa7aa119425
+		sourceLineageTag: 7d879fad-d786-4a5a-a3e9-061f18a16126
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: city_name
+
+		annotation SummarizationSetBy = User
+
+	column latitude
+		dataType: double
+		lineageTag: 960b85d8-542f-4592-a827-cbc02a7ae661
+		sourceLineageTag: c280bca1-cac5-444f-987d-ec0b2f3e01db
+		dataCategory: Uncategorized
+		summarizeBy: sum
+		sourceColumn: latitude
+
+		annotation SummarizationSetBy = User
+
+	column longitude
+		dataType: double
+		lineageTag: 29118d0d-60e8-4cc3-8c88-b55eacc24d14
+		sourceLineageTag: 9acdcd47-3f97-453e-9b97-62bae6f602db
+		dataCategory: Uncategorized
+		summarizeBy: sum
+		sourceColumn: longitude
+
+		annotation SummarizationSetBy = User
+
+	column province_code
+		dataType: int64
+		formatString: 0
+		lineageTag: 688e2a56-e037-478c-b983-b62ec9d6ca01
+		sourceLineageTag: 84112eb1-1e77-4bc1-9182-f5e7db5a3000
+		dataCategory: Uncategorized
+		summarizeBy: sum
+		sourceColumn: province_code
+
+		annotation SummarizationSetBy = User
+
+	column province_name
+		dataType: string
+		lineageTag: 78f5d27c-f09a-404e-9686-01648bc3f7b0
+		sourceLineageTag: 16075668-9685-4c24-949d-23e7214a51e9
+		dataCategory: Uncategorized
+		summarizeBy: none
+		sourceColumn: province_name
+
+		annotation SummarizationSetBy = User
+
+	partition dim_city = entity
+		mode: directQuery
+		source
+			entityName: dim_city
+			expressionSource: 'DirectQuery to AS - sm_vn_weather'
+
+	annotation PBI_ResultType = Exception
+
