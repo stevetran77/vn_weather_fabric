@@ -4,5 +4,17 @@
   "displayName": "Page 1",
   "displayOption": "FitToPage",
   "height": 1080,
-  "width": 1920
+  "width": 1920,
+  "visualInteractions": [
+    {
+      "source": "fc0b521441a21b996040",
+      "target": "2b8ded342b2bd39a1980",
+      "type": "NoFilter"
+    },
+    {
+      "source": "fc0b521441a21b996040",
+      "target": "9179cb92078ee570f1ca",
+      "type": "NoFilter"
+    }
+  ]
 }

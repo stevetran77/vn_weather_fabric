@@ -13,7 +13,6 @@ What each Fabric notebook (`nb_*`) and Data Pipeline (`pl_*`) in `fabric/` does.
 | `nb_migrate_legacy` | Migration: `delete` empties a range, `load` merges Legacy rows (`source = legacy`) | Silver, Gold |
 | `nb_reconcile_legacy` | Compares Legacy aggregates with Gold | `dq_results` |
 | `nb_scratch_bronze_tables` | Utility: creates `raw_weather`, `raw_air_quality` over Bronze | tables in `lh_bronze` |
-| `nb_world_bank` | Empty; World Bank is planned | none |
 
 Guards: `nb_backfill` and `nb_migrate_legacy` stop if a row is on the wrong side of the Cutover date (2024-01-01). `nb_reconcile_legacy` proves the access path and mapping only, because the Legacy source was filled from Gold.
 

@@ -3,10 +3,10 @@
   "name": "69ac80d00180488ab7a1",
   "position": {
     "x": 80,
-    "y": 400,
+    "y": 364,
     "z": 2000,
-    "height": 624,
-    "width": 512,
+    "height": 676,
+    "width": 520,
     "tabOrder": 2000
   },
   "visual": {
@@ -178,21 +178,21 @@
                           "min": {
                             "color": {
                               "Literal": {
-                                "Value": "'#e0f0db'"
+                                "Value": "'#FBE3C4'"
                               }
                             }
                           },
                           "mid": {
                             "color": {
                               "Literal": {
-                                "Value": "'#F0FF6B'"
+                                "Value": "'#E8A55F'"
                               }
                             }
                           },
                           "max": {
                             "color": {
                               "Literal": {
-                                "Value": "'#DBA700'"
+                                "Value": "'#8E2410'"
                               }
                             }
                           },
@@ -270,7 +270,53 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "17D"
+                  "Value": "13D"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Avg PM2.5 by city (ug/m3)'"
+                }
+              }
+            },
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "titleWrap": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "fontColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#252423'"
+                    }
+                  }
+                }
+              }
+            },
+            "bold": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "fontFamily": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Segoe UI'"
                 }
               }
             }
@@ -280,10 +326,10 @@
       "subTitle": [
         {
           "properties": {
-            "fontSize": {
+            "show": {
               "expr": {
                 "Literal": {
-                  "Value": "10D"
+                  "Value": "false"
                 }
               }
             }

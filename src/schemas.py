@@ -45,23 +45,6 @@ SILVER_DDL = _ddl(
 
 GOLD_DDL = SILVER_DDL + ", " + _ddl([("ts_local", "timestamp"), ("source", "string")])
 
-BRONZE_INDICATOR_DDL = _ddl(
-    [
-        ("country_code", "string"),
-        ("indicator_code", "string"),
-        ("indicator_name", "string"),
-        ("date", "string"),
-        ("value", "double"),
-        ("ingest_date", "string"),
-    ]
-)
-
-INDICATOR_SILVER_DDL = _ddl(
-    [("country_code", "string"), ("indicator_code", "string"), ("year", "int"), ("value", "double")]
-)
-
-INDICATOR_GOLD_DDL = INDICATOR_SILVER_DDL + ", " + _ddl([("indicator_name", "string")])
-
 DQ_RESULTS_DDL = _ddl(
     [
         ("run_time", "timestamp"),

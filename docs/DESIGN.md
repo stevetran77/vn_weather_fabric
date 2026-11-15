@@ -16,7 +16,7 @@ Agreed on: 2026-11-12. Status: agreed after a design interview; not implemented 
 
 ## Data
 - Main source: Open-Meteo (weather and air quality) for 34 cities, one representative City per Province of the 34-province structure (scope widened from 6 cities on 2026-11-12)
-- Dimension: provinces.open-api.vn; yearly enrichment: World Bank API (VNM)
+- Dimension: provinces.open-api.vn
 - Source details and risks: see `docs/DATA_SOURCES.md`
 - Open-Meteo license: CC BY 4.0, free tier is non-commercial only, attribution required
 - PM2.5 is CAMS model data (~45 km), not station measurements
@@ -34,7 +34,6 @@ Agreed on: 2026-11-12. Status: agreed after a design interview; not implemented 
   - `dim_city`: 34 cities, coordinates, Province
   - `dim_date`
   - `fact_weather_hourly`: grain (city, hour), weather and PM2.5 combined, with a `source` column
-  - `fact_vn_indicator_yearly`: World Bank indicators per year
   - `agg_city_daily`: daily aggregate for reporting
 - One-time backfill from the Cutover date (2024-01-01) using the historical (ERA5) API; Observations from 2022-09-01 (first date with air quality data) to 2023-12-31 come from the Legacy source (see "On-premises migration")
 - Refresh run, every 2 hours (the historical API lags about 5 days, so recent days come from the Forecast API):
@@ -139,13 +138,14 @@ Status: agreed on 2026-11-13; in progress (the access path was proven on 2026-11
 - Demo screenshots and video are stored in `docs/` before the Trial expires
 
 ## Out of scope (deferred)
+- World Bank yearly indicators (dropped on 2026-11-13: no business question needs them; the survey stays in `docs/DATA_SOURCES.md`)
 - Dev/test environments, `fabric-cicd`, automated CD, Deployment Pipelines, advanced Purview/lineage, Data Activator, ML
 
 ## Unverified (check during implementation)
 - How Open-Meteo counts a request with several comma-separated locations against the free-tier limits (10,000 calls/day); the pricing page only says long time ranges count as several calls (about 3 calls for 4 weeks). Rough estimate, not measured: a 4-year Backfill for 34 cities and 2 APIs may use about 10,000 calls, so it may need to be split across days. Measure in ticket 03
 - Volume of 34 cities x 4 years of hourly data against the Trial capacity
 - How to store the Eventstream custom endpoint connection key without hardcoding it
-- Licenses of World Bank data and provinces.open-api.vn
+- License of provinces.open-api.vn
 - Whether the Trial keeps scheduled pipelines running for the full 60 days
 - Schema support in lakehouses (if the three lakehouses are ever merged into one)
 

@@ -56,6 +56,12 @@ table fact_weather_daily
 		displayFolder: Vietnam threshold
 		lineageTag: 5b25c2af-214e-4ec3-856d-9cc7832b5550
 
+	/// WHO 24-hour PM2.5 guideline (15 ug/m3), used for the card label. Display only: the flag is_above_pm2_5_threshold is computed in nb_daily_aggregate (parameter pm2_5_threshold), so keep this value equal to that parameter.
+	measure 'WHO PM2.5 Threshold 24h' = 15
+		formatString: 0
+		displayFolder: WHO threshold
+		lineageTag: 23e66a6a-e89e-4f19-b3bc-340ceb13d744
+
 	/// Number of city-days (one City on one local day) whose mean Model PM2.5 is above the Vietnam 24-hour limit in [VN PM2.5 Threshold 24h]. Shows 0, not blank, when no day is above it. Model data (CAMS, about 45 km), not a station measurement.
 	measure 'City-Days Above VN Threshold' =
 			VAR thr = [VN PM2.5 Threshold 24h]
@@ -125,6 +131,340 @@ table fact_weather_daily
 		formatString: +0.0;-0.0;0.0
 		displayFolder: Year over year
 		lineageTag: 4db148ae-e2b6-4d6c-b2d9-eff0a7599c62
+
+	/// Avg PM2.5 in the previous year over the same months of the year as the reference year.
+	measure 'Avg PM2.5 Prev Year' =
+			VAR ref = [Ref Year]
+			VAR ms = CALCULATETABLE ( VALUES ( dim_date[month] ), dim_date[year] = ref )
+			VAR prv = CALCULATE ( [Avg PM2.5], dim_date[year] = ref - 1, KEEPFILTERS ( ms ) )
+			RETURN
+			    prv
+		formatString: 0.0
+		displayFolder: Year over year
+		lineageTag: aa5cdb00-54a5-49fc-b925-b18b9c125428
+
+	/// Relative change in Avg PM2.5, reference year vs previous year over the same months.
+	measure 'PM2.5 Pct Change vs Prev Year' =
+			DIVIDE ( [PM2.5 Change vs Prev Year], [Avg PM2.5 Prev Year] )
+		formatString: +0.0%;-0.0%;0.0%
+		displayFolder: Year over year
+		lineageTag: b78bdfc0-19ff-4a15-9593-70939961ce25
+
+	/// Text for the Avg PM2.5 card: the previous-year value and the year, for example vs 25.3 in 2025.
+	measure 'PM2.5 Prev Text' =
+			VAR p = [Avg PM2.5 Prev Year]
+			RETURN
+			    IF ( ISBLANK ( p ), "no previous year", "vs " & FORMAT ( p, "0.0" ) & " in " & [Prev Year] )
+		displayFolder: Year over year
+		lineageTag: 7a246c58-96f9-4724-9e9e-6ed98e40edb4
+
+	/// Share of days above the WHO guideline in the previous year over the same months of the year as the reference year.
+	measure 'Pct Days Above Threshold Prev Year' =
+			VAR ref = [Ref Year]
+			VAR ms = CALCULATETABLE ( VALUES ( dim_date[month] ), dim_date[year] = ref )
+			VAR prv = CALCULATE ( [Pct Days Above Threshold], dim_date[year] = ref - 1, KEEPFILTERS ( ms ) )
+			RETURN
+			    prv
+		formatString: 0.0%
+		displayFolder: Year over year
+		lineageTag: 18742e4a-9bcf-42f9-8e25-9194f0d19f47
+
+	/// Font colour for the WHO share change: red when more days are above the guideline, green when fewer, grey otherwise.
+	measure 'Pct Above Change Color' =
+			IF ( [Pct Above Change vs Prev Year (pp)] > 0, "#C0392B", IF ( [Pct Above Change vs Prev Year (pp)] < 0, "#2E7D32", "#6B6B6B" ) )
+		displayFolder: Year over year
+		lineageTag: 24b23438-2b6e-4cb3-8ade-32ce4705fdd4
+
+	/// Text for the WHO share card: the previous-year value and the year.
+	measure 'Pct Above Prev Text' =
+			VAR p = [Pct Days Above Threshold Prev Year]
+			RETURN
+			    IF ( ISBLANK ( p ), "no previous year", "vs " & FORMAT ( p, "0.0%" ) & " in " & [Prev Year] )
+		displayFolder: Year over year
+		lineageTag: 6cd4d2e9-9847-4d86-a699-32e1ae6ccfe9
+
+	/// Mean daily rainfall (mm per day) in the previous year over the same months of the year as the reference year.
+	measure 'Avg Daily Rainfall Prev Year' =
+			VAR ref = [Ref Year]
+			VAR ms = CALCULATETABLE ( VALUES ( dim_date[month] ), dim_date[year] = ref )
+			VAR prv = CALCULATE ( [Avg Daily Rainfall], dim_date[year] = ref - 1, KEEPFILTERS ( ms ) )
+			RETURN
+			    prv
+		formatString: 0.0
+		displayFolder: Year over year
+		lineageTag: 4b24143b-f63b-4e9e-8b6b-a1cf01ebc185
+
+	/// Relative change in mean daily rainfall, reference year vs previous year over the same months.
+	measure 'Rainfall Pct Change vs Prev Year' =
+			DIVIDE ( [Rainfall Change vs Prev Year], [Avg Daily Rainfall Prev Year] )
+		formatString: +0.0%;-0.0%;0.0%
+		displayFolder: Year over year
+		lineageTag: 70a5260d-84c5-4446-bc1b-17c9adbb456f
+
+	/// Text for the rainfall card: the previous-year value and the year.
+	measure 'Rainfall Prev Text' =
+			VAR p = [Avg Daily Rainfall Prev Year]
+			RETURN
+			    IF ( ISBLANK ( p ), "no previous year", "vs " & FORMAT ( p, "0.0" ) & " in " & [Prev Year] )
+		displayFolder: Year over year
+		lineageTag: d67a55bc-5c7c-4bee-8461-1893c514b0c1
+
+	/// Share of days above the Vietnam limit in the previous year over the same months of the year as the reference year.
+	measure 'Pct Days Above VN Threshold Prev Year' =
+			VAR ref = [Ref Year]
+			VAR ms = CALCULATETABLE ( VALUES ( dim_date[month] ), dim_date[year] = ref )
+			VAR prv = CALCULATE ( [Pct Days Above VN Threshold], dim_date[year] = ref - 1, KEEPFILTERS ( ms ) )
+			RETURN
+			    prv
+		formatString: 0.0%
+		displayFolder: Year over year
+		lineageTag: 5434592b-315b-4b70-ac5f-ceb7d93bfee0
+
+	/// Change in the share of days above the Vietnam 24-hour limit, in percentage points, reference year vs previous year over the same months.
+	measure 'Pct Above VN Change vs Prev Year (pp)' =
+			VAR ref = [Ref Year]
+			VAR ms = CALCULATETABLE ( VALUES ( dim_date[month] ), dim_date[year] = ref )
+			VAR cur = CALCULATE ( [Pct Days Above VN Threshold], dim_date[year] = ref )
+			VAR prv = CALCULATE ( [Pct Days Above VN Threshold], dim_date[year] = ref - 1, KEEPFILTERS ( ms ) )
+			RETURN
+			    IF ( ISBLANK ( cur ) || ISBLANK ( prv ), BLANK (), ( cur - prv ) * 100 )
+		formatString: +0.0 "pp";-0.0 "pp";0.0 "pp"
+		displayFolder: Year over year
+		lineageTag: d0b91d0b-b52f-4f75-931d-74078e9ff3c6
+
+	/// Font colour for the Vietnam share change: red when more days are above the limit, green when fewer, grey otherwise.
+	measure 'Pct Above VN Change Color' =
+			IF ( [Pct Above VN Change vs Prev Year (pp)] > 0, "#C0392B", IF ( [Pct Above VN Change vs Prev Year (pp)] < 0, "#2E7D32", "#6B6B6B" ) )
+		displayFolder: Year over year
+		lineageTag: 3e15724f-deaf-4a33-a3f1-eda3323273d1
+
+	/// Text for the Vietnam share card: the previous-year value and the year.
+	measure 'Pct Above VN Prev Text' =
+			VAR p = [Pct Days Above VN Threshold Prev Year]
+			RETURN
+			    IF ( ISBLANK ( p ), "no previous year", "vs " & FORMAT ( p, "0.0%" ) & " in " & [Prev Year] )
+		displayFolder: Year over year
+		lineageTag: de7963d7-4847-4f92-803c-d75f2507ffb3
+
+	/// HTML for the Avg PM2.5 KPI card (HTML Content visual): value, change pills, monthly sparkline and previous-year text.
+	measure 'Card PM2.5' =
+			VAR ref = [Ref Year]
+			VAR val = CALCULATE ( [Avg PM2.5], dim_date[year] = ref )
+			VAR chg = [PM2.5 Change vs Prev Year]
+			VAR p0 = [PM2.5 Change vs Prev Year]
+			VAR p1 = [PM2.5 Pct Change vs Prev Year]
+			VAR col = [PM2.5 Change Color]
+			VAR bg = col & "1F"
+			VAR arrow = IF ( chg > 0, "&#9650;", IF ( chg < 0, "&#9660;", "" ) )
+			VAR t0 =
+			    FILTER (
+			        ADDCOLUMNS (
+			            SUMMARIZE ( dim_date, dim_date[year], dim_date[month] ),
+			            "@k", dim_date[year] * 12 + dim_date[month],
+			            "@v", [Avg PM2.5]
+			        ),
+			        NOT ISBLANK ( [@v] )
+			    )
+			VAR n = COUNTROWS ( t0 )
+			VAR lo = MINX ( t0, [@v] )
+			VAR hi = MAXX ( t0, [@v] )
+			VAR rng = IF ( hi = lo, 1, hi - lo )
+			VAR kmin = MINX ( t0, [@k] )
+			VAR kmax = MAXX ( t0, [@k] )
+			VAR pts =
+			    CONCATENATEX (
+			        t0,
+			        FORMAT ( DIVIDE ( [@k] - kmin, kmax - kmin, 0 ) * 240, "0.0", "en-US" ) & "," & FORMAT ( 38 - DIVIDE ( [@v] - lo, rng ) * 34, "0.0", "en-US" ),
+			        " ",
+			        [@k], ASC
+			    )
+			VAR spark =
+			    IF (
+			        n < 2,
+			        "",
+			        "<svg viewBox='0 0 240 40' preserveAspectRatio='none' style='width:100%;height:22px;display:block;margin-top:2px'><polygon points='" & pts & " 240,40 0,40' fill='#B7791F' fill-opacity='0.12'/><polyline points='" & pts & "' fill='none' stroke='#B7791F' stroke-width='2' stroke-linejoin='round'/></svg>"
+			    )
+			RETURN
+			    "<div style='box-sizing:border-box;height:124px;padding:8px 14px;overflow:hidden;border:1px solid #E6E8F0;border-radius:16px;background:#FFFFFF;font-family:Segoe UI,sans-serif'>"
+			        & "<div style='display:flex;align-items:center;gap:10px'><div style='width:26px;height:26px;border-radius:8px;background:#B7791F1F;display:flex;align-items:center;justify-content:center'><svg width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='#B7791F' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='8' cy='9' r='3'/><circle cx='16' cy='8' r='2'/><circle cx='14' cy='16' r='3.5'/><circle cx='6' cy='17' r='1.5'/></svg></div><span style='font-size:15px;font-weight:600;color:#6B7280'>Avg PM2.5 (ug/m3)</span></div>"
+			        & "<div style='display:flex;align-items:center;flex-wrap:nowrap;margin-top:2px'><span style='font-size:28px;font-weight:700;color:#111827;margin-right:10px'>" & FORMAT ( val, "0.0", "en-US" ) & "</span>" & IF ( ISBLANK ( p0 ), "", "<span style='white-space:nowrap;background:" & bg & ";color:" & col & ";border-radius:999px;padding:2px 12px;font-size:15px;font-weight:600;margin-right:8px'>" & arrow & " " & FORMAT ( p0, "+0.0;-0.0;0.0", "en-US" ) & "</span>" ) & IF ( ISBLANK ( p1 ), "", "<span style='white-space:nowrap;background:" & bg & ";color:" & col & ";border-radius:999px;padding:2px 12px;font-size:15px;font-weight:600;margin-right:8px'>" & arrow & " " & FORMAT ( p1, "+0.0%;-0.0%;0.0%", "en-US" ) & "</span>" ) & "</div>"
+			        & spark
+			        & "<div style='font-size:12px;color:#6B7280;margin-top:2px'>" & [PM2.5 Prev Text] & "</div>"
+			        & "</div>"
+		displayFolder: Cards
+		lineageTag: 05487058-e573-4b0d-b92c-499d3d4c3742
+
+	/// HTML for the share-of-days-above-WHO-guideline KPI card.
+	measure 'Card Pct Above WHO' =
+			VAR ref = [Ref Year]
+			VAR val = CALCULATE ( [Pct Days Above Threshold], dim_date[year] = ref )
+			VAR chg = [Pct Above Change vs Prev Year (pp)]
+			VAR p0 = [Pct Above Change vs Prev Year (pp)]
+			VAR col = [Pct Above Change Color]
+			VAR bg = col & "1F"
+			VAR arrow = IF ( chg > 0, "&#9650;", IF ( chg < 0, "&#9660;", "" ) )
+			VAR t0 =
+			    FILTER (
+			        ADDCOLUMNS (
+			            SUMMARIZE ( dim_date, dim_date[year], dim_date[month] ),
+			            "@k", dim_date[year] * 12 + dim_date[month],
+			            "@v", [Pct Days Above Threshold]
+			        ),
+			        NOT ISBLANK ( [@v] )
+			    )
+			VAR n = COUNTROWS ( t0 )
+			VAR lo = MINX ( t0, [@v] )
+			VAR hi = MAXX ( t0, [@v] )
+			VAR rng = IF ( hi = lo, 1, hi - lo )
+			VAR kmin = MINX ( t0, [@k] )
+			VAR kmax = MAXX ( t0, [@k] )
+			VAR pts =
+			    CONCATENATEX (
+			        t0,
+			        FORMAT ( DIVIDE ( [@k] - kmin, kmax - kmin, 0 ) * 240, "0.0", "en-US" ) & "," & FORMAT ( 38 - DIVIDE ( [@v] - lo, rng ) * 34, "0.0", "en-US" ),
+			        " ",
+			        [@k], ASC
+			    )
+			VAR spark =
+			    IF (
+			        n < 2,
+			        "",
+			        "<svg viewBox='0 0 240 40' preserveAspectRatio='none' style='width:100%;height:22px;display:block;margin-top:2px'><polygon points='" & pts & " 240,40 0,40' fill='#C2570C' fill-opacity='0.12'/><polyline points='" & pts & "' fill='none' stroke='#C2570C' stroke-width='2' stroke-linejoin='round'/></svg>"
+			    )
+			RETURN
+			    "<div style='box-sizing:border-box;height:124px;padding:8px 14px;overflow:hidden;border:1px solid #E6E8F0;border-radius:16px;background:#FFFFFF;font-family:Segoe UI,sans-serif'>"
+			        & "<div style='display:flex;align-items:center;gap:10px'><div style='width:26px;height:26px;border-radius:8px;background:#C2570C1F;display:flex;align-items:center;justify-content:center'><svg width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='#C2570C' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M12 4 L21 20 H3 Z'/><path d='M12 10 V14 M12 17 V17.1'/></svg></div><span style='font-size:15px;font-weight:600;color:#6B7280'>% of days PM2.5 above " & FORMAT ( [WHO PM2.5 Threshold 24h], "0", "en-US" ) & " ug/m3 (WHO)</span></div>"
+			        & "<div style='display:flex;align-items:center;flex-wrap:nowrap;margin-top:2px'><span style='font-size:28px;font-weight:700;color:#111827;margin-right:10px'>" & FORMAT ( val, "0.0%", "en-US" ) & "</span>" & IF ( ISBLANK ( p0 ), "", "<span style='white-space:nowrap;background:" & bg & ";color:" & col & ";border-radius:999px;padding:2px 12px;font-size:15px;font-weight:600;margin-right:8px'>" & arrow & " " & FORMAT ( p0, "+0.0 ""pp"";-0.0 ""pp"";0.0 ""pp""", "en-US" ) & "</span>" ) & "</div>"
+			        & spark
+			        & "<div style='font-size:12px;color:#6B7280;margin-top:2px'>" & [Pct Above Prev Text] & "</div>"
+			        & "</div>"
+		displayFolder: Cards
+		lineageTag: 447a46fb-126f-4912-bc2d-65dca4d4f4bf
+
+	/// HTML for the Avg Daily Rainfall KPI card. Rainfall change has no good or bad direction, so pills are neutral blue.
+	measure 'Card Rainfall' =
+			VAR ref = [Ref Year]
+			VAR val = CALCULATE ( [Avg Daily Rainfall], dim_date[year] = ref )
+			VAR chg = [Rainfall Change vs Prev Year]
+			VAR p0 = [Rainfall Change vs Prev Year]
+			VAR p1 = [Rainfall Pct Change vs Prev Year]
+			VAR col = "#2F5FBF"
+			VAR bg = col & "1F"
+			VAR arrow = IF ( chg > 0, "&#9650;", IF ( chg < 0, "&#9660;", "" ) )
+			VAR t0 =
+			    FILTER (
+			        ADDCOLUMNS (
+			            SUMMARIZE ( dim_date, dim_date[year], dim_date[month] ),
+			            "@k", dim_date[year] * 12 + dim_date[month],
+			            "@v", [Avg Daily Rainfall]
+			        ),
+			        NOT ISBLANK ( [@v] )
+			    )
+			VAR n = COUNTROWS ( t0 )
+			VAR lo = MINX ( t0, [@v] )
+			VAR hi = MAXX ( t0, [@v] )
+			VAR rng = IF ( hi = lo, 1, hi - lo )
+			VAR kmin = MINX ( t0, [@k] )
+			VAR kmax = MAXX ( t0, [@k] )
+			VAR pts =
+			    CONCATENATEX (
+			        t0,
+			        FORMAT ( DIVIDE ( [@k] - kmin, kmax - kmin, 0 ) * 240, "0.0", "en-US" ) & "," & FORMAT ( 38 - DIVIDE ( [@v] - lo, rng ) * 34, "0.0", "en-US" ),
+			        " ",
+			        [@k], ASC
+			    )
+			VAR spark =
+			    IF (
+			        n < 2,
+			        "",
+			        "<svg viewBox='0 0 240 40' preserveAspectRatio='none' style='width:100%;height:22px;display:block;margin-top:2px'><polygon points='" & pts & " 240,40 0,40' fill='#2F5FBF' fill-opacity='0.12'/><polyline points='" & pts & "' fill='none' stroke='#2F5FBF' stroke-width='2' stroke-linejoin='round'/></svg>"
+			    )
+			RETURN
+			    "<div style='box-sizing:border-box;height:124px;padding:8px 14px;overflow:hidden;border:1px solid #E6E8F0;border-radius:16px;background:#FFFFFF;font-family:Segoe UI,sans-serif'>"
+			        & "<div style='display:flex;align-items:center;gap:10px'><div style='width:26px;height:26px;border-radius:8px;background:#2F5FBF1F;display:flex;align-items:center;justify-content:center'><svg width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='#2F5FBF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M12 3 C12 3 5 11 5 15 a7 7 0 0 0 14 0 C19 11 12 3 12 3 Z'/></svg></div><span style='font-size:15px;font-weight:600;color:#6B7280'>Avg daily rainfall (mm)</span></div>"
+			        & "<div style='display:flex;align-items:center;flex-wrap:nowrap;margin-top:2px'><span style='font-size:28px;font-weight:700;color:#111827;margin-right:10px'>" & FORMAT ( val, "0.0", "en-US" ) & "</span>" & IF ( ISBLANK ( p0 ), "", "<span style='white-space:nowrap;background:" & bg & ";color:" & col & ";border-radius:999px;padding:2px 12px;font-size:15px;font-weight:600;margin-right:8px'>" & arrow & " " & FORMAT ( p0, "+0.0;-0.0;0.0", "en-US" ) & "</span>" ) & IF ( ISBLANK ( p1 ), "", "<span style='white-space:nowrap;background:" & bg & ";color:" & col & ";border-radius:999px;padding:2px 12px;font-size:15px;font-weight:600;margin-right:8px'>" & arrow & " " & FORMAT ( p1, "+0.0%;-0.0%;0.0%", "en-US" ) & "</span>" ) & "</div>"
+			        & spark
+			        & "<div style='font-size:12px;color:#6B7280;margin-top:2px'>" & [Rainfall Prev Text] & "</div>"
+			        & "</div>"
+		displayFolder: Cards
+		lineageTag: 2193faa3-0b87-4b49-8fe4-04aabdc82ade
+
+	/// HTML for the share-of-days-above-Vietnam-limit KPI card.
+	measure 'Card Pct Above VN' =
+			VAR ref = [Ref Year]
+			VAR val = CALCULATE ( [Pct Days Above VN Threshold], dim_date[year] = ref )
+			VAR chg = [Pct Above VN Change vs Prev Year (pp)]
+			VAR p0 = [Pct Above VN Change vs Prev Year (pp)]
+			VAR col = [Pct Above VN Change Color]
+			VAR bg = col & "1F"
+			VAR arrow = IF ( chg > 0, "&#9650;", IF ( chg < 0, "&#9660;", "" ) )
+			VAR t0 =
+			    FILTER (
+			        ADDCOLUMNS (
+			            SUMMARIZE ( dim_date, dim_date[year], dim_date[month] ),
+			            "@k", dim_date[year] * 12 + dim_date[month],
+			            "@v", [Pct Days Above VN Threshold]
+			        ),
+			        NOT ISBLANK ( [@v] )
+			    )
+			VAR n = COUNTROWS ( t0 )
+			VAR lo = MINX ( t0, [@v] )
+			VAR hi = MAXX ( t0, [@v] )
+			VAR rng = IF ( hi = lo, 1, hi - lo )
+			VAR kmin = MINX ( t0, [@k] )
+			VAR kmax = MAXX ( t0, [@k] )
+			VAR pts =
+			    CONCATENATEX (
+			        t0,
+			        FORMAT ( DIVIDE ( [@k] - kmin, kmax - kmin, 0 ) * 240, "0.0", "en-US" ) & "," & FORMAT ( 38 - DIVIDE ( [@v] - lo, rng ) * 34, "0.0", "en-US" ),
+			        " ",
+			        [@k], ASC
+			    )
+			VAR spark =
+			    IF (
+			        n < 2,
+			        "",
+			        "<svg viewBox='0 0 240 40' preserveAspectRatio='none' style='width:100%;height:22px;display:block;margin-top:2px'><polygon points='" & pts & " 240,40 0,40' fill='#8E2410' fill-opacity='0.12'/><polyline points='" & pts & "' fill='none' stroke='#8E2410' stroke-width='2' stroke-linejoin='round'/></svg>"
+			    )
+			RETURN
+			    "<div style='box-sizing:border-box;height:124px;padding:8px 14px;overflow:hidden;border:1px solid #E6E8F0;border-radius:16px;background:#FFFFFF;font-family:Segoe UI,sans-serif'>"
+			        & "<div style='display:flex;align-items:center;gap:10px'><div style='width:26px;height:26px;border-radius:8px;background:#8E24101F;display:flex;align-items:center;justify-content:center'><svg width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='#8E2410' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M12 4 L21 20 H3 Z'/><path d='M12 10 V14 M12 17 V17.1'/></svg></div><span style='font-size:15px;font-weight:600;color:#6B7280'>% of days PM2.5 above " & FORMAT ( [VN PM2.5 Threshold 24h], "0", "en-US" ) & " ug/m3 (VN)</span></div>"
+			        & "<div style='display:flex;align-items:center;flex-wrap:nowrap;margin-top:2px'><span style='font-size:28px;font-weight:700;color:#111827;margin-right:10px'>" & FORMAT ( val, "0.0%", "en-US" ) & "</span>" & IF ( ISBLANK ( p0 ), "", "<span style='white-space:nowrap;background:" & bg & ";color:" & col & ";border-radius:999px;padding:2px 12px;font-size:15px;font-weight:600;margin-right:8px'>" & arrow & " " & FORMAT ( p0, "+0.0 ""pp"";-0.0 ""pp"";0.0 ""pp""", "en-US" ) & "</span>" ) & "</div>"
+			        & spark
+			        & "<div style='font-size:12px;color:#6B7280;margin-top:2px'>" & [Pct Above VN Prev Text] & "</div>"
+			        & "</div>"
+		displayFolder: Cards
+		lineageTag: ea7aa905-03ea-43b1-9b98-64ba353a65bf
+
+	/// HTML for the report header: data source attribution and the Model PM2.5 caveat. The refresh time is in Refresh Badge.
+	measure 'Header Note' =
+			"<div style='font-family:Segoe UI,sans-serif;text-align:right;color:#6B7280;font-size:12px;line-height:1.4;padding-right:14px;overflow:hidden'>"
+			    & "<div>Source: Open-Meteo (CC BY 4.0)</div>"
+			    & "<div>PM2.5 is model data (CAMS, about 45 km grid), not a station measurement.</div></div>"
+		displayFolder: Cards
+		lineageTag: 6b0e970a-0572-42dc-8ec4-d6f7d80e9410
+
+	/// HTML badge next to the Clear all slicers button: the time of the last data refresh, in bold.
+	measure 'Refresh Badge' =
+			"<div style='box-sizing:border-box;height:70px;display:flex;flex-direction:column;justify-content:center;padding:0 16px;border:1px solid #E6E8F0;border-radius:16px;background:#FFFFFF;font-family:Segoe UI,sans-serif;overflow:hidden'>"
+			    & "<div style='font-size:13px;font-weight:700;color:#6B7280'>Data refreshed</div>"
+			    & "<div style='font-size:20px;font-weight:700;color:#111827;white-space:nowrap'>" & FORMAT ( [Last Refresh], "dd mmm yyyy hh:mm", "en-US" ) & "</div></div>"
+		displayFolder: Cards
+		lineageTag: 13634952-3123-436b-9ca5-e21aa0cab5c2
+
+	/// HTML report title with a subtitle that states the data coverage (number of cities and date range, ignoring slicers).
+	measure 'Report Title' =
+			VAR d0 = CALCULATE ( MIN ( fact_weather_daily[date] ), ALL ( fact_weather_daily ) )
+			VAR d1 = CALCULATE ( MAX ( fact_weather_daily[date] ), ALL ( fact_weather_daily ) )
+			VAR cities = CALCULATE ( DISTINCTCOUNT ( dim_city[city_name] ), ALL ( dim_city ) )
+			RETURN
+			    "<div style='display:flex;align-items:center;gap:14px;font-family:Segoe UI,sans-serif;height:56px'>"
+			        & "<div style='width:44px;height:44px;border-radius:12px;background:#2F7D2B;display:flex;align-items:center;justify-content:center;flex:none'><svg width='26' height='26' viewBox='0 0 24 24' fill='none' stroke='#FFFFFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M3 8 H13 a3 3 0 1 0 -3 -3'/><path d='M3 12 H18 a3 3 0 1 1 -3 3'/><path d='M3 16 H9 a2.5 2.5 0 1 1 -2.5 2.5'/></svg></div>"
+			        & "<div><div style='font-size:28px;font-weight:700;line-height:1.15;color:#1F2937;white-space:nowrap'>Vietnam Weather <span style='color:#2F7D2B'>and Air Quality</span></div>"
+			        & "<div style='font-size:13px;color:#6B7280;margin-top:2px;white-space:nowrap'>Daily PM2.5 and rainfall across " & cities & " cities | " & FORMAT ( d0, "mmm yyyy", "en-US" ) & " to " & FORMAT ( d1, "mmm yyyy", "en-US" ) & "</div></div>"
+			        & "</div>"
+		displayFolder: Cards
+		lineageTag: 40eb67f1-7287-4525-8a53-f299687cf0db
 
 	/// Text for the Avg PM2.5 card: arrow, change in ug/m3 and the year compared with.
 	measure 'PM2.5 Change Text' =

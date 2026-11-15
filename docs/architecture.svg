@@ -20,8 +20,6 @@
 <text x="110" y="508" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#1f2937" text-anchor="start"><tspan x="110" dy="0">Open-Meteo</tspan><tspan x="110" dy="17">Weather and Model PM2.5 (CAMS)</tspan><tspan x="110" dy="17">CC BY 4.0, non-commercial tier</tspan></text>
 <rect x="50" y="580" width="44" height="34" rx="6" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/><text x="72" y="603" font-family="Segoe UI, Arial" font-size="13" font-weight="700" fill="#0369a1" text-anchor="middle">API</text>
 <text x="110" y="590" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#1f2937" text-anchor="start"><tspan x="110" dy="0">provinces.open-api.vn</tspan><tspan x="110" dy="17">34 Province names</tspan></text>
-<circle cx="72" cy="682" r="19" fill="none" stroke="#9ca3af" stroke-width="2" stroke-dasharray="4 3"/><path d="M53,682 h38 M72,663 v38 M72,663 a12,19 0 0 1 0,38 a12,19 0 0 1 0,-38" fill="none" stroke="#9ca3af" stroke-width="1.5"/>
-<text x="110" y="672" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#6b7280" text-anchor="start"><tspan x="110" dy="0">World Bank (planned)</tspan><tspan x="110" dy="17">Yearly indicators</tspan></text>
 <rect x="380" y="100" width="950" height="700" rx="16" fill="#f0fdfa" stroke="#0f766e" stroke-width="2.5"/>
 <rect x="400" y="116" width="30" height="30" rx="7" fill="#0f766e"/><path d="M408,138 v-14 h14 v5 h-9 v3 h7 v5 h-7 v6z" fill="#ffffff"/>
 <text x="442" y="137" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="16" font-weight="700" fill="#0f766e" text-anchor="start"><tspan x="442" dy="0">Microsoft Fabric workspace de_vn_prod (Trial)</tspan></text>

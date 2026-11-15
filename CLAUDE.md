@@ -9,7 +9,7 @@ Data Engineer portfolio project on Microsoft Fabric (Trial). Time budget: 2 week
 - `GLOSSARY.md`: domain vocabulary (City, Observation, Reading, Backfill, Refresh window, Model PM2.5, Province)
 
 ## Architecture summary
-- Sources: Open-Meteo (34 cities, one per Province), provinces.open-api.vn, World Bank
+- Sources: Open-Meteo (34 cities, one per Province), provinces.open-api.vn
 - Batch: Bronze (Parquet) -> Silver, Gold (Delta); lakehouses `lh_bronze`, `lh_silver`, `lh_gold`
 - Near-real-time: notebook polls every 2 hours -> Eventstream -> Eventhouse (micro-batch, not a true stream)
 - A single workspace `de_vn_prod`, connected to GitHub (`main`, Git folder `fabric/`); no dev/test environment
@@ -33,7 +33,7 @@ Data Engineer portfolio project on Microsoft Fabric (Trial). Time budget: 2 week
 
 ## Rules
 - Never commit secrets, API keys or tokens, even in test files
-- Do not hardcode environment-specific values (workspace IDs, etc.): use GitHub variables. If hardcoding is unavoidable, ask for approval first and explain why. The list of city names in the config file is approved. Approved: a notebook may bind `lh_bronze` as its default lakehouse (Fabric writes the lakehouse and workspace IDs into the notebook metadata) so it can run `MSCK REPAIR TABLE` on the Bronze tables
+- Do not hardcode environment-specific values (workspace IDs, etc.): use GitHub variables. If hardcoding is unavoidable, ask for approval first and explain why. The list of city names in the config file is approved. Approved: a notebook may bind `lh_bronze` as its default lakehouse (Fabric writes the lakehouse and workspace IDs into the notebook metadata) so it can run `MSCK REPAIR TABLE` on the Bronze tables. Approved: the Vietnam 24-hour PM2.5 limit (45 ug/m3, Table 1 of QCVN 05:2023/BTNMT, applies from 1 Jan 2026) is fixed in the measure `VN PM2.5 Threshold 24h` of `sm_vn_weather`, because it is a regulatory value that needs one place to change
 - Ask for approval before writing a new markdown file
 - Never run `git commit` or `git push` on your own: wait for the user to ask explicitly, every time
 - Use [OK], [FAIL], [SUCCESS] instead of emoji in output

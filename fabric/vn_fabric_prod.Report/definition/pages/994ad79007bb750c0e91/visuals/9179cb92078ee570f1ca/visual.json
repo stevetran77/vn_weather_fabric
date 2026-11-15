@@ -1,35 +1,20 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
-  "name": "46198ee8ccea7a9b61e8",
+  "name": "9179cb92078ee570f1ca",
   "position": {
-    "x": 1136,
-    "y": 368,
-    "z": 7000,
-    "height": 336,
-    "width": 768,
-    "tabOrder": 7000
+    "x": 1168,
+    "y": 718,
+    "z": 7001,
+    "height": 322,
+    "width": 672,
+    "tabOrder": 7001
   },
   "visual": {
-    "visualType": "lineChart",
+    "visualType": "clusteredColumnChart",
     "query": {
       "queryState": {
         "Category": {
           "projections": [
-            {
-              "field": {
-                "Column": {
-                  "Expression": {
-                    "SourceRef": {
-                      "Entity": "dim_date"
-                    }
-                  },
-                  "Property": "year"
-                }
-              },
-              "queryRef": "dim_date.year",
-              "nativeQueryRef": "year",
-              "active": true
-            },
             {
               "field": {
                 "Column": {
@@ -47,28 +32,26 @@
             }
           ]
         },
-        "Rows": {
-          "projections": []
-        },
-        "Y": {
+        "Series": {
           "projections": [
             {
               "field": {
-                "Measure": {
+                "Column": {
                   "Expression": {
                     "SourceRef": {
-                      "Entity": "fact_weather_daily"
+                      "Entity": "dim_date"
                     }
                   },
-                  "Property": "Avg PM2.5"
+                  "Property": "year"
                 }
               },
-              "queryRef": "fact_weather_daily.Avg PM2.5",
-              "nativeQueryRef": "Avg PM2.5"
+              "queryRef": "dim_date.year",
+              "nativeQueryRef": "year",
+              "active": true
             }
           ]
         },
-        "Y2": {
+        "Y": {
           "projections": [
             {
               "field": {
@@ -89,66 +72,40 @@
       }
     },
     "objects": {
-      "valueAxis": [
-        {
-          "properties": {
-            "show": {
-              "expr": {
-                "Literal": {
-                  "Value": "false"
-                }
-              }
-            }
-          }
-        }
-      ],
-      "y2Axis": [
-        {
-          "properties": {
-            "show": {
-              "expr": {
-                "Literal": {
-                  "Value": "false"
-                }
-              }
-            }
-          }
-        }
-      ],
       "legend": [
         {
           "properties": {
-            "position": {
-              "expr": {
-                "Literal": {
-                  "Value": "'TopCenter'"
-                }
-              }
-            },
             "show": {
               "expr": {
                 "Literal": {
                   "Value": "true"
                 }
               }
+            },
+            "position": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Top'"
+                }
+              }
             }
           }
         }
       ],
-      "categoryAxis": [
+      "valueAxis": [
         {
           "properties": {
-            "roundRange": {
+            "gridlineShow": {
               "expr": {
                 "Literal": {
                   "Value": "true"
                 }
               }
             },
-            "axisType": {
+            "titleText": {
               "expr": {
                 "Literal": {
-                  "Value": "'Scalar'"
+                  "Value": "'Avg Daily Rainfall'"
                 }
               }
             },
@@ -156,20 +113,6 @@
               "expr": {
                 "Literal": {
                   "Value": "false"
-                }
-              }
-            },
-            "titleFontSize": {
-              "expr": {
-                "Literal": {
-                  "Value": "10D"
-                }
-              }
-            },
-            "show": {
-              "expr": {
-                "Literal": {
-                  "Value": "true"
                 }
               }
             }
@@ -182,83 +125,10 @@
             "show": {
               "expr": {
                 "Literal": {
-                  "Value": "true"
-                }
-              }
-            }
-          }
-        }
-      ],
-      "dataPoint": [
-        {
-          "properties": {
-            "fill": {
-              "solid": {
-                "color": {
-                  "expr": {
-                    "Literal": {
-                      "Value": "'#B5A000'"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "selector": {
-            "metadata": "fact_weather_daily.Avg PM2.5"
-          }
-        },
-        {
-          "properties": {
-            "fill": {
-              "solid": {
-                "color": {
-                  "expr": {
-                    "ThemeDataColor": {
-                      "ColorId": 5,
-                      "Percent": 0
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "selector": {
-            "metadata": "fact_weather_daily.Avg Daily Rainfall"
-          }
-        }
-      ],
-      "lineStyles": [
-        {
-          "properties": {
-            "areaShow": {
-              "expr": {
-                "Literal": {
                   "Value": "false"
                 }
               }
             }
-          }
-        },
-        {
-          "properties": {
-            "interpolationSmooth": {
-              "expr": {
-                "Literal": {
-                  "Value": "'monotoneX'"
-                }
-              }
-            },
-            "strokeLineJoin": {
-              "expr": {
-                "Literal": {
-                  "Value": "'round'"
-                }
-              }
-            }
-          },
-          "selector": {
-            "metadata": "fact_weather_daily.Avg PM2.5"
           }
         }
       ]
@@ -267,10 +137,107 @@
       "title": [
         {
           "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Rainfall by month, one bar per year (rainy season vs previous years)'"
+                }
+              }
+            },
+            "heading": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Heading2'"
+                }
+              }
+            },
+            "titleWrap": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "fontColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#252423'"
+                    }
+                  }
+                }
+              }
+            },
             "fontSize": {
               "expr": {
                 "Literal": {
+                  "Value": "13D"
+                }
+              }
+            },
+            "bold": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "fontFamily": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Segoe UI'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "border": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "color": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#E6E8F0'"
+                    }
+                  }
+                }
+              }
+            },
+            "radius": {
+              "expr": {
+                "Literal": {
                   "Value": "16D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "subTitle": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
                 }
               }
             }

@@ -9,8 +9,8 @@ This is a Data Engineer portfolio project. It runs on a Fabric Trial capacity.
 - Done: city config and geocoding, Bronze to Gold load for one city and one week (tracer), idempotent merge, CI
 - Written: the 34-city Backfill notebook (`nb_backfill`, which builds `dim_city`), the daily refresh (`nb_daily_refresh`, `pl_daily_refresh`) and the data quality checks (`src/quality.py`)
 - Daily aggregate: `nb_daily_aggregate` builds `fact_weather_daily` (one row per City and local day) and `dim_date` (with a dry/wet `season` column); `fact_weather_daily` has data in Fabric
-- Power BI: the Direct Lake on OneLake semantic model `sm_vn_weather` (relationships, season, DAX measures) and a two-page report are written; the report has not been checked in the Fabric UI yet, and its "Insights and recommendations" text is not written
-- Planned: World Bank yearly indicators, near-real-time branch and dashboard
+- Power BI: the Direct Lake on OneLake semantic model `sm_vn_weather` (relationships, season, DAX measures) and a four-page report (PM2.5 map, PM2.5 by City and season, weather vs PM2.5, City ranking, with an "Insights and recommendations" section) are done
+- Planned: near-real-time branch and dashboard (World Bank yearly indicators were dropped)
 
 The agreed design is in [`docs/DESIGN.md`](docs/DESIGN.md); domain terms are in [`GLOSSARY.md`](GLOSSARY.md).
 
@@ -18,8 +18,8 @@ The agreed design is in [`docs/DESIGN.md`](docs/DESIGN.md); domain terms are in 
 
 ```
 Open-Meteo (weather, PM2.5) ──┐
-provinces.open-api.vn ────────┼──> notebooks ──> lh_bronze (raw Parquet, by ingest date)
-World Bank (planned) ─────────┘                       │
+provinces.open-api.vn ────────┴──> notebooks ──> lh_bronze (raw Parquet, by ingest date)
+                                                      │
                                                       v
                                           lh_silver (Delta, cleaned, UTC)
                                                       │
@@ -56,7 +56,6 @@ The history from 2022-09-01 to 2023-12-31 reaches Gold through a simulated on-pr
 
 - Weather and air quality: [Open-Meteo](https://open-meteo.com/), licensed [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). The free tier is for non-commercial use only
 - Province names: [provinces.open-api.vn](https://provinces.open-api.vn/) (community-run; its terms are not verified)
-- Planned: World Bank API
 
 ## Limitations
 
