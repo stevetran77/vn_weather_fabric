@@ -16,22 +16,9 @@ The agreed design is in [`docs/DESIGN.md`](docs/DESIGN.md); domain terms are in 
 
 ## Architecture
 
-```
-Open-Meteo (weather, PM2.5) ──┐
-provinces.open-api.vn ────────┴──> notebooks ──> lh_bronze (raw Parquet, by ingest date)
-                                                      │
-                                                      v
-                                          lh_silver (Delta, cleaned, UTC)
-                                                      │
-                                                      v
-                              lh_gold (Delta: fact_weather_hourly, dim_city)
-                                                      │  nb_daily_aggregate
-                                                      v
-                              lh_gold (Delta: fact_weather_daily, dim_date)
-                                                      │
-                                                      v
-                              sm_vn_weather (Direct Lake on OneLake) ──> Power BI report
-```
+![Architecture diagram: Open-Meteo and provinces.open-api.vn feed lh_bronze, lh_silver and lh_gold in Microsoft Fabric, which a Direct Lake semantic model and a Power BI report read; a second lane migrates the history from a simulated on-premises SQL Server through a data gateway into the same lakehouses](docs/architecture.svg)
+
+If your viewer does not render SVG, use [`docs/architecture.png`](docs/architecture.png).
 
 - The plain Python logic lives in `src/` and is tested outside Fabric; notebooks only import it and call it
 - Writes use a Delta `MERGE` on `(city_id, ts)`, so rerunning a load adds no duplicates
