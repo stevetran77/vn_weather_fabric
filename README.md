@@ -9,7 +9,7 @@ This is a Data Engineer portfolio project. It runs on a Fabric Trial capacity.
 - Done: city config and geocoding, Bronze to Gold load for one city and one week (tracer), idempotent merge, CI
 - Written: the 34-city Backfill notebook (`nb_backfill`, which builds `dim_city`), the daily refresh (`nb_daily_refresh`, `pl_daily_refresh`) and the data quality checks (`src/quality.py`)
 - Daily aggregate: `nb_daily_aggregate` builds `fact_weather_daily` (one row per City and local day) and `dim_date` (with a dry/wet `season` column); `fact_weather_daily` has data in Fabric
-- Power BI: the Direct Lake on OneLake semantic model `sm_vn_weather` (relationships, season, DAX measures) and a four-page report (PM2.5 map, PM2.5 by City and season, weather vs PM2.5, City ranking, with an "Insights and recommendations" section) are done
+- Power BI: the Direct Lake on OneLake semantic model `sm_vn_weather` (relationships, season, DAX measures) and a four-page report (PM2.5 map, PM2.5 by City and season, weather vs PM2.5, City ranking, with an "Insights and recommendations" section) are done; a screenshot is in [`docs/powerbi-report.png`](docs/powerbi-report.png) and is shown under [Power BI report](#power-bi-report)
 - Planned: near-real-time branch and dashboard (World Bank yearly indicators were dropped)
 
 The agreed design is in [`docs/DESIGN.md`](docs/DESIGN.md); domain terms are in [`GLOSSARY.md`](GLOSSARY.md).
@@ -26,6 +26,12 @@ If your viewer does not render SVG, use [`docs/architecture.png`](docs/architect
 - Days in `fact_weather_daily` are cut on local time and leave out forecast hours; a day is above the PM2.5 threshold when its mean Model PM2.5 is above the `pm2_5_threshold` notebook parameter (default 15 ug/m3, the WHO 24-hour guideline)
 - `dim_date` has a single writer, `nb_daily_aggregate`, which rebuilds it to cover the days in `fact_weather_daily`
 - The report splits the year into a dry season (November to April) and a wet season (May to October); this is a coarse national split, and the real seasons differ by region
+
+## Power BI report
+
+![Power BI report: daily PM2.5 and rainfall across 34 Vietnamese cities, with KPI cards, a per-city ranking and month-by-year trend charts](docs/powerbi-report.png)
+
+Direct Lake on OneLake over `lh_gold`. The year, month and city slicers filter every visual; the KPI cards compare the selected period with the previous year. The 15 ug/m3 line is the WHO 24-hour guideline and the 45 ug/m3 line is the Vietnam limit (QCVN 05:2023/BTNMT, Table 1).
 
 ## On-premises migration
 
